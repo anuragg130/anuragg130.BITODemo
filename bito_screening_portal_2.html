@@ -1,0 +1,1757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BITO Startup Screening Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy:#1A3A5C; --navy-dark:#0E2540; --navy-mid:#1E4570;
+  --saffron:#D4691E; --saffron-lt:#E8874A;
+  --gold:#B5900A; --gold-bg:#FEF9E7;
+  --cream:#F8F5F0; --white:#FFFFFF;
+  --success:#166534; --success-bg:#DCFCE7;
+  --priority:#5B21B6; --priority-bg:#EDE9FE;
+  --warning:#92400E; --warning-bg:#FEF3C7;
+  --danger:#991B1B; --danger-bg:#FEE2E2;
+  --info:#1D4ED8; --info-bg:#DBEAFE;
+  --border:#D8D2CF; --border-lt:#EBE6E3;
+  --text:#1A1A2E; --text-2:#4A5568; --text-3:#718096;
+  --r:8px; --r-lg:14px;
+  --sh:0 2px 8px rgba(0,0,0,0.07);
+  --sh-md:0 4px 18px rgba(0,0,0,0.11);
+  --sh-lg:0 8px 32px rgba(0,0,0,0.15);
+  --ff-serif:'Playfair Display',Georgia,serif;
+  --ff-sans:'DM Sans',system-ui,sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--ff-sans);background:var(--cream);color:var(--text);font-size:15px;line-height:1.6}
+
+/* ── VIEW TOGGLE ─────────────────────────────────────── */
+.vtbar{background:var(--navy-dark);padding:9px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.vtbar-label{font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:rgba(255,255,255,.5)}
+.vt-group{display:flex;gap:6px;background:rgba(255,255,255,.08);padding:4px;border-radius:6px}
+.vt-btn{padding:6px 18px;border:none;border-radius:4px;font-family:var(--ff-sans);font-size:12px;font-weight:700;letter-spacing:.04em;cursor:pointer;transition:all .2s;color:rgba(255,255,255,.6);background:transparent}
+.vt-btn.on{background:var(--saffron);color:#fff}
+
+/* ── APPLICANT: HEADER ───────────────────────────────── */
+.portal-hdr{background:var(--navy);padding:22px 32px;display:flex;align-items:center;gap:18px;border-bottom:3px solid var(--saffron)}
+.emblem{width:56px;height:56px;border-radius:50%;border:2px solid rgba(255,255,255,.25);background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:26px;color:rgba(255,255,255,.85)}
+.hdr-text{flex:1}
+.hdr-text .gov-lbl{font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:2px}
+.hdr-text h1{font-family:var(--ff-serif);font-size:20px;font-weight:600;color:#fff;line-height:1.2}
+.hdr-text .portal-lbl{font-size:12px;color:rgba(255,255,255,.45);margin-top:2px}
+.hdr-badge{background:rgba(212,105,30,.18);border:1px solid var(--saffron);color:var(--saffron-lt);padding:5px 14px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.04em}
+
+/* ── PROGRESS ────────────────────────────────────────── */
+.prog-wrap{background:#fff;border-bottom:1px solid var(--border-lt);padding:0 24px;overflow-x:auto}
+.prog-steps{display:flex;align-items:stretch;min-width:560px}
+.prog-step{flex:1;display:flex;flex-direction:column;align-items:center;padding:12px 6px;position:relative;cursor:default}
+.prog-step::after{content:'';position:absolute;top:24px;right:-50%;width:100%;height:2px;background:var(--border);z-index:0}
+.prog-step:last-child::after{display:none}
+.step-dot{width:26px;height:26px;border-radius:50%;border:2px solid var(--border);background:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--text-3);position:relative;z-index:1;transition:all .3s}
+.prog-step.done .step-dot{border-color:var(--success);background:var(--success);color:#fff}
+.prog-step.done::after{background:var(--success)}
+.prog-step.cur .step-dot{border-color:var(--navy);background:var(--navy);color:#fff}
+.step-lbl{font-size:9px;font-weight:600;color:var(--text-3);margin-top:5px;text-align:center;letter-spacing:.03em;text-transform:uppercase}
+.prog-step.cur .step-lbl{color:var(--navy);font-weight:700}
+.prog-step.done .step-lbl{color:var(--success)}
+
+/* ── FORM CONTAINER ──────────────────────────────────── */
+.form-wrap{max-width:780px;margin:28px auto;padding:0 20px 60px}
+.f-sec{display:none}
+.f-sec.on{display:block;animation:fIn .3s ease}
+@keyframes fIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* Section header */
+.sec-tag{display:inline-flex;align-items:center;gap:6px;background:var(--navy);color:#fff;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:4px 12px;border-radius:3px;margin-bottom:10px}
+.sec-hdr h2{font-family:var(--ff-serif);font-size:24px;font-weight:600;color:var(--navy);line-height:1.2;margin-bottom:5px}
+.sec-hdr p{color:var(--text-2);font-size:13px;margin-bottom:22px}
+
+/* Form cards */
+.fcard{background:#fff;border:1px solid var(--border-lt);border-radius:var(--r-lg);padding:22px 26px;margin-bottom:14px;box-shadow:var(--sh)}
+.fcard.gate{border-left:4px solid var(--navy)}
+
+/* Question layout */
+.q-block{margin-bottom:20px}
+.q-block:last-child{margin-bottom:0}
+.q-lbl{font-size:14px;font-weight:600;color:var(--text);margin-bottom:3px;line-height:1.5;display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.q-pts{font-size:10px;font-weight:700;color:var(--saffron);background:var(--gold-bg);padding:2px 8px;border-radius:10px;white-space:nowrap;flex-shrink:0}
+.q-hint{font-size:12px;color:var(--text-3);margin-bottom:10px;line-height:1.5}
+.q-div{border:none;border-top:1px solid var(--border-lt);margin:18px 0}
+
+/* Radio options */
+.rg{display:flex;flex-direction:column;gap:7px}
+.ro{display:flex;align-items:flex-start;gap:10px;padding:9px 13px;border:1.5px solid var(--border);border-radius:var(--r);cursor:pointer;transition:all .15s;position:relative}
+.ro:hover{border-color:var(--navy);background:rgba(26,58,92,.03)}
+.ro.sel{border-color:var(--navy);background:rgba(26,58,92,.05)}
+.ro input[type=radio]{margin-top:2px;accent-color:var(--navy);flex-shrink:0;width:15px;height:15px}
+.ro .rt{font-size:13px;color:var(--text);line-height:1.4;flex:1}
+.ro .rs{font-size:10px;font-weight:700;color:var(--text-3);padding:1px 7px;background:var(--border-lt);border-radius:8px;flex-shrink:0;align-self:flex-start;margin-top:1px}
+
+/* Yes/No */
+.yn-g{display:flex;gap:10px}
+.yn{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:11px;border:1.5px solid var(--border);border-radius:var(--r);cursor:pointer;font-size:14px;font-weight:600;transition:all .15s}
+.yn.yes:hover,.yn.yes.sel{border-color:var(--success);background:var(--success-bg);color:var(--success)}
+.yn.no:hover,.yn.no.sel{border-color:var(--danger);background:var(--danger-bg);color:var(--danger)}
+.yn input{display:none}
+
+/* Text inputs */
+.fi{width:100%;border:1.5px solid var(--border);border-radius:var(--r);padding:9px 13px;font-family:var(--ff-sans);font-size:14px;color:var(--text);transition:border-color .15s;background:#fff;outline:none}
+.fi:focus{border-color:var(--navy);box-shadow:0 0 0 3px rgba(26,58,92,.09)}
+textarea.fi{resize:vertical;min-height:76px}
+.char-ct{text-align:right;font-size:11px;color:var(--text-3);margin-top:3px}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.ff{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
+.ff:last-child{margin-bottom:0}
+.fl{font-size:12px;font-weight:700;color:var(--text-2);display:flex;align-items:center;gap:3px}
+.req{color:var(--danger);font-size:11px}
+.fs{width:100%;border:1.5px solid var(--border);border-radius:var(--r);padding:9px 13px;font-family:var(--ff-sans);font-size:14px;color:var(--text);background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath fill='%23718096' d='M5 7L0 2h10z'/%3E%3C/svg%3E") no-repeat right 12px center;appearance:none;outline:none;cursor:pointer;padding-right:30px}
+.fs:focus{border-color:var(--navy);box-shadow:0 0 0 3px rgba(26,58,92,.09)}
+
+/* Stage cards */
+.stage-cards{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.sc{border:2px solid var(--border);border-radius:var(--r-lg);padding:15px;cursor:pointer;transition:all .2s;position:relative}
+.sc:hover{border-color:var(--navy)}
+.sc.sel{border-color:var(--saffron);background:#FFF8F2}
+.sc input{position:absolute;opacity:0;pointer-events:none}
+.sc .si{font-size:22px;margin-bottom:6px}
+.sc .sn{font-size:13px;font-weight:700;color:var(--navy);margin-bottom:3px}
+.sc .sd{font-size:11px;color:var(--text-3);line-height:1.4}
+.sc .str{display:inline-block;margin-top:8px;font-size:9px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;padding:2px 8px;border-radius:10px}
+.sc.ta .str{background:var(--success-bg);color:var(--success)}
+.sc.tb .str{background:var(--priority-bg);color:var(--priority)}
+
+/* Buttons */
+.btn-row{display:flex;justify-content:space-between;align-items:center;margin-top:28px;padding-top:22px;border-top:1px solid var(--border-lt)}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:10px 22px;border-radius:var(--r);font-family:var(--ff-sans);font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;border:none;letter-spacing:.02em}
+.btn-pri{background:var(--navy);color:#fff}
+.btn-pri:hover{background:var(--navy-dark)}
+.btn-sec{background:#fff;color:var(--text);border:1.5px solid var(--border)}
+.btn-sec:hover{border-color:var(--navy);color:var(--navy)}
+.btn-sub{background:var(--saffron);color:#fff;font-size:14px;padding:12px 28px}
+.btn-sub:hover{background:#c05a15}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+
+/* Error / info inline */
+.err-banner{display:none;background:var(--danger-bg);border:1px solid #F87171;border-radius:var(--r);padding:11px 15px;font-size:13px;color:var(--danger);margin-top:12px;line-height:1.5}
+.err-banner.on{display:block}
+.cond-field{display:none;margin-top:10px;padding:12px;background:#F0FDF4;border-radius:var(--r);border:1px solid #BBF7D0}
+.cond-field.on{display:block}
+
+/* ── DOCUMENT UPLOAD ─────────────────────────────────── */
+.upl{display:none;margin-top:12px;padding:14px 15px;background:#FAFAF8;border:1px solid var(--border);border-left:3px solid var(--saffron);border-radius:var(--r)}
+.upl.on{display:block;animation:fIn .25s ease}
+.upl-hd{display:flex;align-items:baseline;gap:8px;margin-bottom:3px;flex-wrap:wrap}
+.upl-ttl{font-size:12px;font-weight:700;color:var(--navy);letter-spacing:.02em}
+.upl-badge{font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:8px}
+.upl-badge.req{background:var(--danger-bg);color:var(--danger)}
+.upl-badge.opt{background:var(--border-lt);color:var(--text-3)}
+.upl-hint{font-size:11px;color:var(--text-3);line-height:1.5;margin-bottom:9px}
+.upl-drop{display:flex;align-items:center;gap:10px;padding:10px 13px;border:1.5px dashed var(--border);border-radius:var(--r);background:#fff;cursor:pointer;transition:all .15s}
+.upl-drop:hover{border-color:var(--navy);background:rgba(26,58,92,.02)}
+.upl-drop.has-file{border-style:solid;border-color:var(--success);background:var(--success-bg)}
+.upl-ic{font-size:18px;flex-shrink:0;color:var(--saffron)}
+.upl-drop.has-file .upl-ic{color:var(--success)}
+.upl-txt{flex:1;font-size:12px;color:var(--text-2);line-height:1.4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.upl-drop.has-file .upl-txt{color:var(--success);font-weight:600}
+.upl-btn{flex-shrink:0;font-size:11px;font-weight:700;color:var(--navy);background:#fff;border:1.5px solid var(--border);border-radius:var(--r);padding:5px 12px;cursor:pointer;font-family:var(--ff-sans);transition:all .15s}
+.upl-drop.has-file .upl-btn{display:none}
+.upl-clear{flex-shrink:0;display:none;font-size:11px;font-weight:700;color:var(--danger);background:none;border:none;cursor:pointer;font-family:var(--ff-sans)}
+.upl-drop.has-file .upl-clear{display:inline}
+.upl input[type=file]{display:none}
+.upl-err{display:none;font-size:11px;color:var(--danger);font-weight:600;margin-top:7px}
+.upl-err.on{display:block}
+
+/* ── REJECTION SCREEN ────────────────────────────────── */
+#rej-screen{display:none;background:#fff;border:2px solid var(--danger);border-radius:var(--r-lg);padding:36px 32px;text-align:center;max-width:580px;margin:32px auto;box-shadow:var(--sh-md)}
+#rej-screen.on{display:block;animation:fIn .3s ease}
+.rej-icon{font-size:52px;margin-bottom:14px}
+#rej-screen h3{font-family:var(--ff-serif);font-size:22px;color:var(--danger);margin-bottom:10px}
+#rej-screen p{color:var(--text-2);font-size:14px;line-height:1.6;margin-bottom:8px}
+.rej-reasons{background:var(--danger-bg);border-radius:var(--r);padding:12px 16px;text-align:left;margin:14px 0;font-size:13px;color:var(--danger)}
+.rej-reasons li{margin-left:18px;margin-bottom:4px}
+.rej-info{background:var(--info-bg);border-radius:var(--r);padding:10px 14px;font-size:12px;color:var(--info);margin-top:10px}
+
+/* ── SCORECARD ───────────────────────────────────────── */
+#scorecard{display:none}
+#scorecard.on{display:block;animation:fIn .4s ease}
+.sc-hdr{background:linear-gradient(135deg,var(--navy-dark),var(--navy-mid));color:#fff;border-radius:var(--r-lg) var(--r-lg) 0 0;padding:30px 28px;text-align:center}
+.sc-hdr h2{font-family:var(--ff-serif);font-size:22px;margin-bottom:20px}
+.score-ring{width:128px;height:128px;border-radius:50%;border:5px solid rgba(255,255,255,.25);display:flex;flex-direction:column;align-items:center;justify-content:center;margin:0 auto 14px}
+.score-n{font-family:var(--ff-serif);font-size:48px;font-weight:700;line-height:1}
+.score-d{font-size:13px;opacity:.65}
+.status-pill{display:inline-block;padding:6px 20px;border-radius:20px;font-size:12px;font-weight:700;letter-spacing:.05em;margin-top:4px}
+.sc-body{background:#fff;border:1px solid var(--border-lt);border-top:none;border-radius:0 0 var(--r-lg) var(--r-lg);padding:28px}
+.dim-row{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--border-lt)}
+.dim-row:last-of-type{border-bottom:none}
+.dim-name{width:210px;flex-shrink:0;font-size:12px;font-weight:600;color:var(--text)}
+.dim-bar-w{flex:1;height:8px;background:var(--border-lt);border-radius:4px;overflow:hidden}
+.dim-bar{height:100%;border-radius:4px;width:0;transition:width 1.2s cubic-bezier(.4,0,.2,1)}
+.dim-bar.hi{background:var(--success)}
+.dim-bar.md{background:var(--saffron)}
+.dim-bar.lo{background:var(--danger)}
+.dim-sc{width:68px;text-align:right;font-size:12px;font-weight:700;color:var(--text-2);flex-shrink:0}
+.sc-note{margin-top:18px;padding:12px 15px;border-radius:var(--r);font-size:12px;line-height:1.6}
+.sc-note.warn{background:var(--warning-bg);color:var(--warning)}
+.sc-note.info{background:var(--info-bg);color:var(--info)}
+.sc-note.ok{background:var(--success-bg);color:var(--success)}
+.app-ref{background:var(--gold-bg);border:1px solid #D4B862;border-radius:var(--r);padding:10px 15px;font-size:13px;font-weight:600;color:var(--gold);text-align:center;margin-bottom:18px}
+
+/* ── REVIEWER VIEW ───────────────────────────────────── */
+.rv-hdr{background:var(--navy);padding:18px 28px;display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid var(--saffron)}
+.rv-hdr-left h1{font-family:var(--ff-serif);font-size:19px;color:#fff}
+.rv-hdr-left p{font-size:11px;color:rgba(255,255,255,.45);margin-top:2px}
+.rv-tag{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.7);padding:4px 12px;border-radius:10px;font-size:11px;font-weight:600}
+
+.rv-body{max-width:1200px;margin:0 auto;padding:24px 20px}
+
+/* Stats */
+.stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:11px;margin-bottom:22px}
+.stat{background:#fff;border:1px solid var(--border-lt);border-radius:var(--r-lg);padding:15px 18px;box-shadow:var(--sh)}
+.stat .sv{font-family:var(--ff-serif);font-size:28px;font-weight:700;line-height:1;color:var(--navy)}
+.stat .sl{font-size:10px;color:var(--text-3);font-weight:600;margin-top:3px;text-transform:uppercase;letter-spacing:.05em}
+.stat.sp .sv{color:var(--priority)}
+.stat.ss .sv{color:var(--success)}
+.stat.sb .sv{color:var(--info)}
+.stat.sr .sv{color:var(--danger)}
+
+/* Filter bar */
+.flt-bar{display:flex;align-items:center;gap:7px;margin-bottom:14px;flex-wrap:wrap}
+.flt{padding:6px 15px;border-radius:20px;border:1.5px solid var(--border);background:#fff;font-size:11px;font-weight:700;cursor:pointer;transition:all .15s;color:var(--text-2);font-family:var(--ff-sans)}
+.flt.on{border-color:var(--navy);background:var(--navy);color:#fff}
+.flt .ct{opacity:.65;margin-left:3px}
+.srch{margin-left:auto;border:1.5px solid var(--border);border-radius:20px;padding:6px 15px;font-family:var(--ff-sans);font-size:12px;outline:none;width:190px;background:#fff}
+.srch:focus{border-color:var(--navy)}
+
+/* App list */
+.app-list{display:flex;flex-direction:column;gap:7px}
+.app-hdr{background:var(--cream);border:1px solid var(--border-lt);border-radius:var(--r);padding:9px 18px;display:grid;grid-template-columns:1fr 100px 80px 140px 100px 70px;gap:10px;align-items:center}
+.app-hdr span{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3)}
+.app-row{background:#fff;border:1px solid var(--border-lt);border-radius:var(--r-lg);padding:14px 18px;display:grid;grid-template-columns:1fr 100px 80px 140px 100px 70px;gap:10px;align-items:center;cursor:pointer;transition:all .15s;box-shadow:var(--sh)}
+.app-row:hover{border-color:var(--navy);box-shadow:var(--sh-md);transform:translateY(-1px)}
+.app-nm{font-size:14px;font-weight:700;color:var(--navy)}
+.app-id{font-size:10px;color:var(--text-3);margin-top:2px}
+.tr-pill{display:inline-block;padding:2px 9px;border-radius:8px;font-size:10px;font-weight:700;letter-spacing:.03em}
+.tr-pill.a{background:var(--success-bg);color:var(--success)}
+.tr-pill.b{background:var(--priority-bg);color:var(--priority)}
+.app-sc{font-family:var(--ff-serif);font-size:20px;font-weight:700;color:var(--navy)}
+.app-sc small{font-size:11px;font-weight:400;color:var(--text-3)}
+.sbadge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:8px;font-size:10px;font-weight:700;letter-spacing:.03em}
+.sbadge .dot{width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
+.sbadge.pri{background:var(--priority-bg);color:var(--priority)}
+.sbadge.shl{background:var(--success-bg);color:var(--success)}
+.sbadge.bdl{background:var(--info-bg);color:var(--info)}
+.sbadge.rej{background:var(--danger-bg);color:var(--danger)}
+.drill-btn{background:var(--navy);color:#fff;border:none;border-radius:var(--r);padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--ff-sans);transition:all .15s}
+.drill-btn:hover{background:var(--saffron)}
+
+/* Drill-down panel */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:flex-start;justify-content:flex-end}
+.overlay.on{display:flex}
+.drill-panel{background:#fff;width:480px;height:100vh;overflow-y:auto;box-shadow:var(--sh-lg);animation:slideIn .3s ease}
+@keyframes slideIn{from{transform:translateX(100%)}to{transform:translateX(0)}}
+.dp-hdr{background:var(--navy);padding:18px 22px;display:flex;align-items:flex-start;justify-content:space-between}
+.dp-hdr h3{font-family:var(--ff-serif);font-size:17px;color:#fff}
+.dp-hdr .dp-sub{font-size:11px;color:rgba(255,255,255,.45);margin-top:2px}
+.close-x{background:rgba(255,255,255,.15);border:none;color:#fff;width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s}
+.close-x:hover{background:rgba(255,255,255,.25)}
+.dp-body{padding:20px}
+.dp-score-hero{text-align:center;margin-bottom:20px}
+.dp-sn{font-family:var(--ff-serif);font-size:52px;font-weight:700;color:var(--navy);line-height:1}
+.dp-sn span{font-size:18px;font-weight:400;color:var(--text-3)}
+.dp-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px}
+.dp-info{background:var(--cream);border-radius:var(--r);padding:9px 12px}
+.dp-info .lbl{font-size:9px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--text-3)}
+.dp-info .val{font-size:13px;font-weight:600;color:var(--text);margin-top:2px}
+.dp-sec-ttl{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);margin-bottom:10px;padding-bottom:5px;border-bottom:1px solid var(--border-lt)}
+.dd-row{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--border-lt)}
+.dd-row:last-of-type{border-bottom:none}
+.dd-name{flex:1;font-size:12px;font-weight:500;color:var(--text)}
+.dd-bw{width:90px;height:6px;background:var(--border-lt);border-radius:3px;overflow:hidden}
+.dd-b{height:100%;border-radius:3px;transition:width .8s ease}
+.dd-sc{font-size:12px;font-weight:700;color:var(--navy);width:55px;text-align:right}
+.dd-max{font-size:10px;font-weight:400;color:var(--text-3)}
+.dp-flag{display:flex;align-items:flex-start;gap:7px;padding:9px 11px;border-radius:var(--r);margin-bottom:5px;font-size:12px;line-height:1.4}
+.dp-flag.warn{background:var(--warning-bg);color:var(--warning)}
+.dp-flag.ok{background:var(--success-bg);color:var(--success)}
+.dp-flag.info{background:var(--info-bg);color:var(--info)}
+.reviewer-box{background:var(--cream);border-radius:var(--r-lg);padding:14px;margin-top:18px;border:1.5px solid var(--border)}
+.reviewer-box .rb-lbl{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);margin-bottom:8px}
+.reviewer-box select,.reviewer-box textarea{width:100%;border:1.5px solid var(--border);border-radius:var(--r);padding:8px 11px;font-family:var(--ff-sans);font-size:13px;background:#fff;outline:none;margin-bottom:8px}
+.reviewer-box select:focus,.reviewer-box textarea:focus{border-color:var(--navy)}
+.reviewer-box textarea{height:64px;resize:none}
+.save-rec{width:100%;background:var(--navy);color:#fff;border:none;border-radius:var(--r);padding:9px;font-family:var(--ff-sans);font-weight:700;font-size:13px;cursor:pointer;transition:all .2s}
+.save-rec:hover{background:var(--saffron)}
+
+/* Responsive */
+@media(max-width:768px){
+  .frow{grid-template-columns:1fr}
+  .stage-cards{grid-template-columns:1fr}
+  .stats-row{grid-template-columns:repeat(2,1fr)}
+  .app-hdr{display:none}
+  .app-row{grid-template-columns:1fr auto;grid-template-rows:auto auto}
+  .app-row>*:nth-child(n+3):not(:nth-child(4)):not(:nth-child(6)){display:none}
+  .drill-panel{width:100vw}
+  .portal-hdr{padding:16px}
+  .form-wrap{padding:0 14px 40px}
+}
+</style>
+</head>
+<body>
+
+<!-- ─── VIEW TOGGLE BAR ─────────────────────────────────────────── -->
+<div class="vtbar">
+  <span class="vtbar-label">BITO Screening Portal &mdash; Beta</span>
+  <div class="vt-group">
+    <button class="vt-btn on" onclick="switchView('applicant')">&#128196; Applicant View</button>
+    <button class="vt-btn" onclick="switchView('reviewer')">&#128202; Reviewer Dashboard</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--  APPLICANT VIEW                                                -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div id="applicant-view">
+
+  <!-- Header -->
+  <div class="portal-hdr">
+    <div class="emblem">&#9784;</div>
+    <div class="hdr-text">
+            <h1>BITO 
+              
+            </h1>
+      <div class="portal-lbl">Startup Incubation &amp; Funding — Screening Portal</div>
+    </div>
+    <div class="hdr-badge">2025–26 Cycle</div>
+  </div>
+
+  <!-- Progress Bar -->
+  <div class="prog-wrap">
+    <div class="prog-steps">
+      <div class="prog-step cur" id="ps-1"><div class="step-dot">1</div><div class="step-lbl">Eligibility</div></div>
+      <div class="prog-step" id="ps-2"><div class="step-dot">2</div><div class="step-lbl">Profile</div></div>
+      <div class="prog-step" id="ps-3"><div class="step-dot">3</div><div class="step-lbl">Team</div></div>
+      <div class="prog-step" id="ps-4"><div class="step-dot">4</div><div class="step-lbl">Market</div></div>
+      <div class="prog-step" id="ps-5"><div class="step-dot">5</div><div class="step-lbl">Product</div></div>
+      <div class="prog-step" id="ps-6"><div class="step-dot">6</div><div class="step-lbl">Traction</div></div>
+      <div class="prog-step" id="ps-7"><div class="step-dot">7</div><div class="step-lbl">Financials</div></div>
+      <div class="prog-step" id="ps-8"><div class="step-dot">8</div><div class="step-lbl">Safety &amp; Impact</div></div>
+    </div>
+  </div>
+
+  <div class="form-wrap">
+
+    <!-- ── REJECTION SCREEN ──────────────────────────────────── -->
+    <div id="rej-screen">
+      <div class="rej-icon">&#128683;</div>
+      <h3>Application Cannot Proceed</h3>
+      <p>Based on your responses to the mandatory eligibility gates, your application does not meet the minimum criteria for this programme cycle.</p>
+      <ul class="rej-reasons" id="rej-list"></ul>
+      <div class="rej-info">&#8505;&#65039; If you believe this is an error, contact <strong>startups@bitoworld.com</strong>. Enterprises that address these gaps may reapply in the next cycle.</div>
+      <div style="margin-top:18px"><button class="btn btn-sec" onclick="resetForm()">&#8592; Start Over</button></div>
+    </div>
+
+    <!-- ── STEP 1: ELIGIBILITY GATES ────────────────────────── -->
+    <div class="f-sec on" id="step-1">
+      <div class="sec-hdr">
+        <div class="sec-tag">&#9881; Step 1 of 8</div>
+        <h2>Eligibility Gates</h2>
+        <p>These are mandatory pass/fail checks. A &ldquo;No&rdquo; answer to any gate will disqualify the application at this stage. Please answer honestly.</p>
+      </div>
+
+      <div class="fcard gate">
+        <div class="q-block">
+          <div class="q-lbl">E1 &mdash; Is your entity legally registered in India?</div>
+          <div class="q-hint">Includes Pvt Ltd, LLP, Partnership, Cooperative, FPO, SHG, Proprietorship, or any entity incorporated under Indian law.</div>
+          <div class="yn-g">
+            <label class="yn yes" onclick="ynClick(this,'e1','yes')"><input type="radio" name="e1" value="yes" data-gate="yes">&#10003; Yes</label>
+            <label class="yn no" onclick="ynClick(this,'e1','no')"><input type="radio" name="e1" value="no" data-gate="no">&#10007; No</label>
+          </div>
+        </div>
+        <hr class="q-div">
+        <div class="q-block">
+          <div class="q-lbl">E2 &mdash; Is food processing or food manufacturing the primary business activity of your entity?</div>
+          <div class="q-hint">Excludes primary agriculture/farming, livestock, fisheries without value addition, and packaged drinking water (as per BITO  norms).</div>
+          <div class="yn-g">
+            <label class="yn yes" onclick="ynClick(this,'e2','yes')"><input type="radio" name="e2" value="yes" data-gate="yes">&#10003; Yes</label>
+            <label class="yn no" onclick="ynClick(this,'e2','no')"><input type="radio" name="e2" value="no" data-gate="no">&#10007; No</label>
+          </div>
+        </div>
+        <hr class="q-div">
+        <div class="q-block">
+          <div class="q-lbl">E3 &mdash; Do Indian nationals hold 51% or more ownership in your entity?</div>
+          <div class="q-hint">Applicable to all entity types. For FPOs, cooperatives and SHGs, this criterion is considered automatically satisfied.</div>
+          <div class="yn-g">
+            <label class="yn yes" onclick="ynClick(this,'e3','yes')"><input type="radio" name="e3" value="yes" data-gate="yes">&#10003; Yes</label>
+            <label class="yn no" onclick="ynClick(this,'e3','no')"><input type="radio" name="e3" value="no" data-gate="no">&#10007; No</label>
+          </div>
+        </div>
+        <hr class="q-div">
+        <div class="q-block">
+          <div class="q-lbl">E4 &mdash; Has your entity received monetary grant support exceeding &#8377;50 lakh in aggregate from any Central or State Government scheme in the current financial year?</div>
+          <div class="q-hint">If yes, the application will be flagged for review but will not be automatically disqualified. Subsidies, credit-linked capital support, and equity investments are treated separately.</div>
+          <div class="yn-g">
+            <label class="yn yes" onclick="ynClick(this,'e4','yes')"><input type="radio" name="e4" value="yes">&#10003; Yes</label>
+            <label class="yn no" onclick="ynClick(this,'e4','no')"><input type="radio" name="e4" value="no">&#10007; No</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="fcard">
+        <div class="q-block">
+          <div class="q-lbl">E5 &mdash; Entity Type <span class="req">*</span></div>
+          <select name="entity_type" class="fs">
+            <option value="">Select entity type</option>
+            <option>Private Limited Company</option>
+            <option>Limited Liability Partnership (LLP)</option>
+            <option>Partnership Firm</option>
+            <option>Farmer Producer Organisation (FPO)</option>
+            <option>Self Help Group (SHG)</option>
+            <option>Cooperative Society</option>
+            <option>Proprietorship</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="frow" style="margin-top:14px">
+          <div class="ff">
+            <label class="fl">Registration Number (CIN / LLPIN / Other) <span class="req">*</span></label>
+            <input type="text" class="fi" name="reg_no" placeholder="e.g. U15490MH2023PTC000000">
+          </div>
+          <div class="ff">
+            <label class="fl">State of Registration <span class="req">*</span></label>
+            <select name="state" class="fs">
+              <option value="">Select State / UT</option>
+              <option>Andhra Pradesh</option><option>Arunachal Pradesh</option><option>Assam</option><option>Bihar</option>
+              <option>Chhattisgarh</option><option>Goa</option><option>Gujarat</option><option>Haryana</option>
+              <option>Himachal Pradesh</option><option>Jharkhand</option><option>Karnataka</option><option>Kerala</option>
+              <option>Madhya Pradesh</option><option>Maharashtra</option><option>Manipur</option><option>Meghalaya</option>
+              <option>Mizoram</option><option>Nagaland</option><option>Odisha</option><option>Punjab</option>
+              <option>Rajasthan</option><option>Sikkim</option><option>Tamil Nadu</option><option>Telangana</option>
+              <option>Tripura</option><option>Uttar Pradesh</option><option>Uttarakhand</option><option>West Bengal</option>
+              <option>Delhi (NCT)</option><option>Jammu &amp; Kashmir</option><option>Ladakh</option>
+              <option>Other UT</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Registration / incorporation proof — always required -->
+        <div class="upl on" id="upl-reg">
+          <div class="upl-hd"><span class="upl-ttl">&#128206; Entity Registration Proof</span><span class="upl-badge req">Mandatory</span></div>
+          <div class="upl-hint">Certificate of Incorporation / LLP Certificate / Partnership Deed / FPO, SHG or Cooperative Registration — matching your selected entity type.</div>
+          <label class="upl-drop">
+            <span class="upl-ic">&#8682;</span>
+            <span class="upl-txt">Click to upload (PDF, JPG, PNG — max 10 MB)</span>
+            <span class="upl-btn">Browse</span>
+            <span class="upl-clear" onclick="clearUpl(event,this)">Remove</span>
+            <input type="file" accept=".pdf,.jpg,.jpeg,.png" onchange="fileChosen(this)">
+          </label>
+          <div class="upl-err">This document is required to proceed.</div>
+        </div>
+      </div>
+
+      <!-- GSTIN — always required -->
+      <div class="fcard">
+        <div class="ff">
+          <label class="fl">GSTIN <span class="req">*</span></label>
+          <input type="text" class="fi" name="gstin" id="gstin" maxlength="15" placeholder="15-character GST Identification Number, e.g. 22ABCDE0000A1Z5">
+        </div>
+        <div class="upl on" id="upl-gst">
+          <div class="upl-hd"><span class="upl-ttl">&#128206; GST Registration Certificate</span><span class="upl-badge req">Mandatory</span></div>
+          <div class="upl-hint">Upload your GST Registration Certificate (Form GST REG-06).</div>
+          <label class="upl-drop">
+            <span class="upl-ic">&#8682;</span>
+            <span class="upl-txt">Click to upload (PDF, JPG, PNG — max 10 MB)</span>
+            <span class="upl-btn">Browse</span>
+            <span class="upl-clear" onclick="clearUpl(event,this)">Remove</span>
+            <input type="file" accept=".pdf,.jpg,.jpeg,.png" onchange="fileChosen(this)">
+          </label>
+          <div class="upl-err">This document is required to proceed.</div>
+        </div>
+      </div>
+
+      <!-- Current Bihar Presence -->
+      <div class="fcard">
+        <div class="q-block">
+          <div class="q-lbl">E6 &mdash; What is your current presence in Bihar? <span class="req">*</span></div>
+          <div class="q-hint">BITO is a Bihar-focused programme. Indicate whether you already operate in Bihar or plan to expand there.</div>
+          <div class="rg" id="bihar">
+            <label class="ro" onclick="biharClick(this,'none')"><input type="radio" name="bihar" value="none"><span class="rt">No current presence and no Bihar expansion planned</span></label>
+            <label class="ro" onclick="biharClick(this,'existing')"><input type="radio" name="bihar" value="existing"><span class="rt">Existing operations in Bihar</span></label>
+            <label class="ro" onclick="biharClick(this,'expansion')"><input type="radio" name="bihar" value="expansion"><span class="rt">Expansion into Bihar planned</span></label>
+          </div>
+        </div>
+        <!-- Existing operations proof -->
+        <div class="upl" id="upl-bihar-existing">
+          <div class="upl-hd"><span class="upl-ttl">&#128206; Proof of Bihar Operations</span><span class="upl-badge req">Mandatory</span></div>
+          <div class="upl-hint">Any one of: GST place of business in Bihar, lease deed, trade licence, utility bill, or facility proof showing a Bihar address.</div>
+          <label class="upl-drop">
+            <span class="upl-ic">&#8682;</span>
+            <span class="upl-txt">Click to upload (PDF, JPG, PNG — max 10 MB)</span>
+            <span class="upl-btn">Browse</span>
+            <span class="upl-clear" onclick="clearUpl(event,this)">Remove</span>
+            <input type="file" accept=".pdf,.jpg,.jpeg,.png" onchange="fileChosen(this)">
+          </label>
+          <div class="upl-err">This document is required to proceed.</div>
+        </div>
+        <!-- Expansion proof -->
+        <div class="upl" id="upl-bihar-expansion">
+          <div class="upl-hd"><span class="upl-ttl">&#128206; Bihar Expansion Evidence</span><span class="upl-badge req">Mandatory</span></div>
+          <div class="upl-hint">Any one of: Bihar-specific MoU, Letter of Intent (LOI), site-identification note, or expansion proposal.</div>
+          <label class="upl-drop">
+            <span class="upl-ic">&#8682;</span>
+            <span class="upl-txt">Click to upload (PDF, JPG, PNG — max 10 MB)</span>
+            <span class="upl-btn">Browse</span>
+            <span class="upl-clear" onclick="clearUpl(event,this)">Remove</span>
+            <input type="file" accept=".pdf,.jpg,.jpeg,.png" onchange="fileChosen(this)">
+          </label>
+          <div class="upl-err">This document is required to proceed.</div>
+        </div>
+      </div>
+
+      <div id="gate-err" class="err-banner">Please answer all mandatory eligibility questions before proceeding.</div>
+      <div class="btn-row">
+        <span></span>
+        <button class="btn btn-pri" onclick="checkGates()">Next &rarr;</button>
+      </div>
+    </div>
+
+    <!-- ── STEP 2: STARTUP PROFILE + STAGE ──────────────────── -->
+    <div class="f-sec" id="step-2">
+      <div class="sec-hdr">
+        <div class="sec-tag">&#128196; Step 2 of 8</div>
+        <h2>Startup Profile &amp; Stage</h2>
+        <p>Help us understand what you do and where you are in your journey. This section also determines which scoring track applies to your application.</p>
+      </div>
+
+      <div class="fcard">
+        <div class="frow">
+          <div class="ff">
+            <label class="fl">Startup / Entity Name <span class="req">*</span></label>
+            <input type="text" class="fi" name="startup_name" id="startup_name" placeholder="As registered with MCA / Registrar">
+          </div>
+          <div class="ff">
+            <label class="fl">DPIIT Recognition Number</label>
+            <input type="text" class="fi" name="dpiit_no" id="dpiit_no" placeholder="DIPP##### (if available)" oninput="toggleDpiitUpl()">
+          </div>
+        </div>
+        <div class="upl" id="upl-dpiit">
+          <div class="upl-hd"><span class="upl-ttl">&#128206; DPIIT Recognition Certificate</span><span class="upl-badge req">Mandatory</span></div>
+          <div class="upl-hint">Since you entered a DPIIT number, upload the matching DPIIT Recognition Certificate.</div>
+          <label class="upl-drop">
+            <span class="upl-ic">&#8682;</span>
+            <span class="upl-txt">Click to upload (PDF, JPG, PNG — max 10 MB)</span>
+            <span class="upl-btn">Browse</span>
+            <span class="upl-clear" onclick="clearUpl(event,this)">Remove</span>
+            <input type="file" accept=".pdf,.jpg,.jpeg,.png" onchange="fileChosen(this)">
+          </label>
+          <div class="upl-err">This document is required to proceed.</div>
+        </div>
+        <div class="frow">
+          <div class="ff">
+            <label class="fl">Year of Establishment <span class="req">*</span></label>
+            <select name="estab_year" class="fs">
+              <option value="">Select year</option>
+              <option>2025</option><option>2024</option><option>2023</option><option>2022</option>
+              <option>2021</option><option>2020</option><option>2019</option><option>2018</option>
+              <option>2017</option><option>2016</option><option>2015 or earlier</option>
+            </select>
+          </div>
+          <div class="ff">
+            <label class="fl">Primary Food Category <span class="req">*</span></label>
+            <select name="food_cat" class="fs">
+              <option value="">Select category</option>
+              <option>Cereals, Millets &amp; Pulses</option>
+              <option>Fruits &amp; Vegetables Processing</option>
+              <option>Dairy &amp; Dairy Products</option>
+              <option>Meat, Poultry &amp; Seafood</option>
+              <option>Spices &amp; Condiments</option>
+              <option>Oils &amp; Fats</option>
+              <option>Bakery &amp; Confectionery</option>
+              <option>Beverages (Non-alcoholic)</option>
+              <option>Ready-to-Eat / Ready-to-Cook</option>
+              <option>Organic / Natural Foods</option>
+              <option>Nutraceuticals &amp; Functional Foods</option>
+              <option>Food Technology / Agri-tech</option>
+              <option>Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="ff">
+          <label class="fl">Describe your business in one sentence <span class="req">*</span></label>
+          <input type="text" class="fi" name="one_liner" id="one_liner" maxlength="200" placeholder="e.g. We manufacture cold-pressed virgin oils from tribal forest produce in Jharkhand...">
+          <div class="char-ct"><span id="ol-ct">0</span> / 200 characters</div>
+        </div>
+        <div class="ff">
+          <label class="fl">What problem does your product/service solve, and who faces it? <span class="req">*</span></label>
+          <textarea class="fi" name="problem_stmt" id="prob_stmt" maxlength="600" placeholder="Describe the specific unmet need, who your target customer is, and the gap in the current market..."></textarea>
+          <div class="char-ct"><span id="ps-ct">0</span> / 600 characters</div>
+        </div>
+        <div class="ff">
+          <label class="fl">ODOP (One District One Product) — Product or District, if applicable</label>
+          <input type="text" class="fi" name="odop" placeholder="e.g. GI-tagged Darjeeling Tea, Kolhapuri Jaggery, Basmati Rice, etc.">
+        </div>
+      </div>
+
+      <div class="fcard">
+        <div class="q-lbl" style="margin-bottom:12px">What stage best describes your startup today? <span class="req">*</span></div>
+        <div class="stage-cards">
+          <label class="sc ta" onclick="stageClick(this,'A')">
+            <input type="radio" name="stage" value="idea">
+            <div class="si">&#128161;</div>
+            <div class="sn">Idea / Concept</div>
+            <div class="sd">No product yet, or early-stage ideation. Working on proof of concept or recipe development.</div>
+            <span class="str">Track A &mdash; Grant Support</span>
+          </label>
+          <label class="sc ta" onclick="stageClick(this,'A')">
+            <input type="radio" name="stage" value="prototype">
+            <div class="si">&#129514;</div>
+            <div class="sn">Prototype / Pilot</div>
+            <div class="sd">Product/recipe developed and tested in lab or pilot batches, but not yet commercially sold.</div>
+            <span class="str">Track A &mdash; Grant Support</span>
+          </label>
+          <label class="sc tb" onclick="stageClick(this,'B')">
+            <input type="radio" name="stage" value="early_revenue">
+            <div class="si">&#128200;</div>
+            <div class="sn">Early Revenue</div>
+            <div class="sd">Generating initial sales, serving first customers. Revenue exists but scale is limited.</div>
+            <span class="str">Track B &mdash; Debt / Scale</span>
+          </label>
+          <label class="sc tb" onclick="stageClick(this,'B')">
+            <input type="radio" name="stage" value="growth">
+            <div class="si">&#128640;</div>
+            <div class="sn">Growth / Scaling</div>
+            <div class="sd">Established revenue stream, defined channels, seeking capital to scale production or market presence.</div>
+            <span class="str">Track B &mdash; Debt / Scale</span>
+          </label>
+        </div>
+        <div id="stage-err" class="err-banner" style="margin-top:10px">Please select a stage to continue.</div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-sec" onclick="goStep(1)">&larr; Back</button>
+        <button class="btn btn-pri" onclick="goStep(3)">Next &rarr;</button>
+      </div>
+    </div>
+
+    <!-- ── STEP 3: TEAM ───────────────────────────────────────── -->
+    <div class="f-sec" id="step-3">
+      <div class="sec-hdr">
+        <div class="sec-tag">&#128101; Step 3 of 8</div>
+        <h2>Team &amp; Execution Capability</h2>
+        <p>The founding team is the single most important predictor of startup success. This section carries the highest weight.</p>
+      </div>
+
+      <div class="fcard">
+        <div class="q-block">
+          <div class="q-lbl">TM1 &mdash; Does your founding team have direct domain expertise in food processing, food technology, or food science?</div>
+          <div class="q-hint">Consider formal education (food science, dairy tech, agriculture), professional experience in the food industry, or hands-on processing expertise.</div>
+          <div class="rg" id="tm1">
+            <label class="ro" onclick="roClick(this,'tm1',0)"><input type="radio" name="tm1" data-score="0"><span class="rt">No relevant food industry background among founding members</span></label>
+            <label class="ro" onclick="roClick(this,'tm1',2)"><input type="radio" name="tm1" data-score="2"><span class="rt">General business or agriculture background, limited food processing experience</span></label>
+            <label class="ro" onclick="roClick(this,'tm1',5)"><input type="radio" name="tm1" data-score="5"><span class="rt">Formal education or professional experience in food technology / food science / processing</span></label>
+            <label class="ro" onclick="roClick(this,'tm1',8)"><input type="radio" name="tm1" data-score="8"><span class="rt">Deep domain expertise — industry veterans, food scientists, or prior senior roles in food manufacturing</span></label>
+          </div>
+          <div class="upl" id="upl-tm1">
+            <div class="upl-hd"><span class="upl-ttl">&#128206; Domain Expertise Proof</span><span class="upl-badge req">Mandatory</span></div>
+            <div class="upl-hint">Since you claimed food-domain expertise, upload supporting evidence: CV, degree certificate, or experience certificate of the relevant founder(s).</div>
+            <label class="upl-drop">
+              <span class="upl-ic">&#8682;</span>
+              <span class="upl-txt">Click to upload (PDF, JPG, PNG — max 10 MB)</span>
+              <span class="upl-btn">Browse</span>
+              <span class="upl-clear" onclick="clearUpl(event,this)">Remove</span>
+              <input type="file" accept=".pdf,.jpg,.jpeg,.png" onchange="fileChosen(this)">
+            </label>
+            <div class="upl-err">This document is required to proceed.</div>
+          </div>
+        </div>
+        <hr class="q-div">
+        <div class="q-block">
+          <div class="q-lbl">TM2 &mdash; How many founders are working full-time (&ge;80% of working hours) in this venture?</div>
+          <div class="rg" id="tm2">
+            <label class="ro" onclick="roClick(this,'tm2',0)"><input type="radio" name="tm2" data-score="0"><span class="rt">No founders are working full-time (all part-time / advisory)</span></label>
+            <label class="ro" onclick="roClick(this,'tm2',3)"><input type="radio" name="tm2" data-score="3"><span class="rt">1 founder working full-time</span></label>
+            <label class="ro" onclick="roClick(this,'tm2',6)"><input type="radio" name="tm2" data-score="6"><span class="rt">2 founders working full-time</span></label>
+            <label class="ro" onclick="roClick(this,'tm2',8)"><input type="radio" name="tm2" data-score="8"><span class="rt">3 or more founders working full-time</span></label>
+          </div>
+        </div>
+        <hr class="q-div">
+        <div class="q-block">
+          <div class="q-lbl">TM3 &mdash; What best describes the lead founder&rsquo;s most significant prior professional achievement?</div>
+          <div class="q-hint">Select the option that best reflects the lead founder&rsquo;s track record before this venture.</div>
+          <div class="rg" id="tm3">
+            <label class="ro" onclick="roClick(this,'tm3',0)"><input type="radio" name="tm3" data-score="0"><span class="rt">Student / fresher — no significant prior professional experience</span></label>
+            <label class="ro" onclick="roClick(this,'tm3',2)"><input type="radio" name="tm3" data-score="2"><span class="rt">Early career professional (1–5 years) or experience from a failed venture (learning counts)</span></label>
+            <label class="ro" onclick="roClick(this,'tm3',4)"><input type="radio" name="tm3" data-score="4"><span class="rt">Senior professional, domain expert, or built and exited a prior business</span></label>
+            <label class="ro" onclick="roClick(this,'tm3',5)"><input type="radio" name="tm3" data-score="5"><span class="rt">Serial entrepreneur, industry leader, academic researcher with commercialisation track record, or government/MNC leadership experience</span></label>
+          </div>
+        </div>
+        <hr class="q-div">
+        <div class="q-block">
+          <div class="q-lbl">TM4 &mdash; Do you have a qualified food professional (food technologist, food scientist, or FSSAI-recognised technical person) on your team?</div>
+          <div class="rg" id="tm4">
+            <label class="ro" onclick="roClick(this,'tm4',0)"><input type="radio" name="tm4" data-score="0"><span class="rt">No — and no plan to hire one in the near term</span></label>
+            <label class="ro" onclick="roClick(this,'tm4',1)"><input type="radio" name="tm4" data-score="1"><span class="rt">Planning to hire or onboard one within 6 months</span></label>
+            <label class="ro" onclick="roClick(this,'tm4',2)"><input type="radio" name="tm4" data-score="2"><span class="rt">Part-time consultant or technical advisor engaged</span></label>
+            <label class="ro" onclick="roClick(this,'tm4',4)"><input type="radio" name="tm4" data-score="4"><span class="rt">Full-time qualified food professional already on the team</span></label>
+          </div>
+          <div class="upl" id="upl-tm4">
+            <div class="upl-hd"><span class="upl-ttl">&#128206; Food Professional Proof</span><span class="upl-badge req">Mandatory</span></div>
+            <div class="upl-hint">Upload evidence for the qualified food professional: degree, certification, consultant agreement, or appointment letter.</div>
+            <label class="upl-drop">
+              <span class="upl-ic">&#8682;</span>
+              <span class="upl-txt">Click to upload (PDF, JPG, PNG — max 10 MB)</span>
+              <span class="upl-btn">Browse</span>
+              <span class="upl-clear" onclick="clearUpl(event,this)">Remove</span>
+              <input type="file" accept=".pdf,.jpg,.jpeg,.png" onchange="fileChosen(this)">
+            </label>
+            <div class="upl-err">This document is required to proceed.</div>
+          </div>
+        </div>
+        <div class="ff" style="margin-top:18px">
+          <label class="fl">Lead Founder Name &amp; LinkedIn / Professional Profile (optional)</label>
+          <input type="text" class="fi" name="founder_profile" placeholder="Name — linkedin.com/in/... or brief role description">
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-sec" onclick="goStep(2)">&larr; Back</button>
+        <button class="btn btn-pri" onclick="goStep(4)">Next &rarr;</button>
+      </div>
+    </div>
+
+    <!-- ── STEP 4: MARKET ─────────────────────────────────────── -->
+    <div class="f-sec" id="step-4">
+      <div class="sec-hdr">
+        <div class="sec-tag">&#127760; Step 4 of 8</div>
+        <h2>Market Need &amp; Size</h2>
+        <p>Demonstrate that a real, sizeable market opportunity exists for your product.</p>
+      </div>
+
+      <div class="fcard">
+        <div class="q-block">
+          <div class="q-lbl">MK1 &mdash; What is your estimated Total Addressable Market (TAM) in India for your product category?</div>
+          <div class="q-hint">Provide the realistic demand potential for your product in India. Basis for your estimate is welcome in the text box below.</div>
+          <div class="rg" id="mk1">
+            <label class="ro" onclick="roClick(this,'mk1',0)"><input type="radio" name="mk1" data-score="0"><span class="rt">No estimate available — have not assessed market size</span></label>
+            <label class="ro" onclick="roClick(this,'mk1',1)"><input type="radio" name="mk1" data-score="1"><span class="rt">Less than &#8377;100 crore</span></label>
+            <label class="ro" onclick="roClick(this,'mk1',3)"><input type="radio" name="mk1" data-score="3"><span class="rt">&#8377;100 crore to &#8377;500 crore</span></label>
+            <label class="ro" onclick="roClick(this,'mk1',5)"><input type="radio" name="mk1" data-score="5"><span class="rt">&#8377;500 crore to &#8377;2,000 crore</span></label>
+            <label class="ro" onclick="roClick(this,'mk1',6)"><input type="radio" name="mk1" data-score="6"><span class="rt">Greater than &#8377;2,000 crore</span></label>
+          </div>
+          <div class="ff" style="margin-top:12px">
+            <label class="fl">Briefly state the basis for your TAM estimate</label>
+            <input type="text" class="fi" name="tam_basis" placeholder="e.g. IMARC report 2024, industry association data, DGCI&S export statistics...">
+          </div>
+        </div>
+        <hr class="q-div">
+        <div class="q-block">
+          <div class="q-lbl">MK2 &mdash; How have you validated market demand for your product?</div>
+          <div class="rg" id="mk2">
+            <label class="ro" onclick="roClick(this,'mk2',0)"><input type="radio" name="mk2" data-score="0"><span class="rt">No validation done yet — based on personal belief or observation</span></label>
+            <label class="ro" onclick="roClick(this,'mk2',1)"><input type="radio" name="mk2" data-score="1"><span class="rt">Informal conversations with potential customers or family / community feedback</span></label>
+            <label class="ro" onclick="roClick(this,'mk2',3)"><input type="radio" name="mk2" data-score="3"><span class="rt">Formal market research, surveys, or secondary research with documented findings</span></label>
+            <label class="ro" onclick="roClick(this,'mk2',6)"><input type="radio" name="mk2" data-score="6"><span class="rt">Letters of Intent (LOIs), pre-orders, offtake agreements, or active pilot customers with documented evidence</span></label>
+          </div>
+        </div>
+        <hr class="q-div">
+        <div class="q-block">
+          <div class="q-lbl">MK3 &mdash; Does your product address any of the following national strategic priorities?</div>
+          <div class="rg" id="mk3">
+            <label class="ro" onclick="roClick(this,'mk3',0)"><input type="radio" name="mk3" data-score="0"><span class="rt">None of the below — primarily a domestic consumer product without strategic linkage</span></label>
+            <label class="ro" onclick="roClick(this,'mk3',2)"><input type="radio" name="mk3" data-score="2"><span class="rt">Indirect alignment — contributes to agricultural value addition or rural income but not directly mapped to a priority scheme</span></label>
+            <label class="ro" onclick="roClick(this,'mk3',4)"><input type="radio" name="mk3" data-score="4"><span class="rt">Direct alignment — ODOP product, import substitution, or export promotion (declared, but no formal tie-up yet)</span></label>
+            <label class="ro" onclick="roClick(this,'mk3',5)"><input type="radio" name="mk3" data-score="5"><span class="rt">Verified alignment — active ODOP linkage, APEDA registration, confirmed export orders, or GI-tagged product commercialisation</span></label>
+          </div>
+        </div>
+        <hr class="q-div">
+        <div class="q-block">
+          <div class="q-lbl">MK4 &mdash; How would you describe your competitive differentiation?</div>
+          <div class="rg" id="mk4">
+            <label class="ro" onclick="roClick(this,'mk4',0)"><input type="radio" name="mk4" data-score="0"><span class="rt">No clear differentiation — similar to existing products in the market</span></label>
+            <label class="ro" onclick="roClick(this,'mk4',1)"><input type="radio" name="mk4" data-score="1"><span class="rt">Some differentiation on price, packaging, or geographic presence</span></label>
+            <label class="ro" onclick="roClick(this,'mk4',2)"><input type="radio" name="mk4" data-score="2"><span class="rt">Clear differentiation — unique recipe, superior quality, novel ingredient, or niche segment</span></label>
+            <label class="ro" onclick="roClick(this,'mk4',3)"><input type="radio" name="mk4" data-score="3"><span class="rt">Strong moat — proprietary process, IP, exclusive sourcing arrangement, or significant first-mover advantage</span></label>
+          </div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-sec" onclick="goStep(2)">&larr; Back</button>
+        <button class="btn btn-pri" onclick="goStep(5)">Next &rarr;</button>
+      </div>
+    </div>
+
+    <!-- ── STEP 5: PRODUCT & FEASIBILITY ─────────────────────── -->
+    <div class="f-sec" id="step-5">
+      <div class="sec-hdr">
+        <div class="sec-tag">&#127981; Step 5 of 8</div>
+        <h2>Product &amp; Feasibility</h2>
+        <p>Demonstrate the technical maturity and manufacturing readiness of your product.</p>
+      </div>
+
+      <div class="fcard">
+        <div class="q-block">
+          <div class="q-lbl">PF1 &mdash; What is the current stage of your product / recipe / process development?</div>
+          <div class="rg" id="pf1">
+            <label class="ro" onclick="roClick(this,'pf1',1)"><input type="radio" name="pf1" data-score="1"><span class="rt">Concept stage — product idea defined but formulation / recipe / process not yet developed</span></label>
+            <label class="ro" onclick="roClick(this,'pf1',2)"><input type="radio" name="pf1" data-score="2"><span class="rt">Formulation or recipe developed and tested at household / kitchen level</span></label>
+            <label class="ro" onclick="roClick(this,'pf1',3)"><input type="radio" name="pf1" data-score="3"><span class="rt">Pilot batch produced and tested with feedback from a trial group</span></label>
+            <label class="ro" onclick="roClick(this,'pf1',4)"><input type="radio" name="pf1" data-score="4"><span class="rt">Small commercial batch produced; consistent quality across batches demonstrated</span></label>
+            <label class="ro" onclick="roClick(this,'pf1',5)"><input type="radio" name="pf1" data-score="5"><span class="rt">Commercial production established with defined standard operating procedures (SOPs)</span></label>
+          </div>
+        </div>
+        <hr class="q-div">
+        <div class="q-block">
+          <div class="q-lbl">PF2 &mdash; What is your manufacturing / production arrangement?</div>
+          <div class="rg" id="pf2">
+            <label class="ro" onclick="roClick(this,'pf2',0)"><input type="radio" name="pf2" data-score="0"><span class="rt">No manufacturing plan in place</span></label>
+            <label class="ro" onclick="roClick(this,'pf2',2)"><input type="radio" name="pf2" data-score="2"><span class="rt">Plan to use third-party / contract manufacturing (co-packer or shared facility)</span></label>
+            <label class="ro" onclick="roClick(this,'pf2',3)"><input type="radio" name="pf2" data-score="3"><span class="rt">Own manufacturing unit planned or under construction; land/space identified</span></label>
+            <label class="ro" onclick="roClick(this,'pf2',4)"><input type="radio" name="pf2" data-score="4"><span class="rt">Own manufacturing unit operational at small / micro scale</span></label>
+            <label class="ro" onclick="roClick(this,'pf2',5)"><input type="radio" name="pf2" data-score="5"><span class="rt">Own unit operational with documented capacity, utilisation rate, and machinery details</span></label>
+          </div>
+          <div class="upl" id="upl-pf2">
+            <div class="upl-hd"><span class="upl-ttl">&#128206; Manufacturing Arrangement Proof</span><span class="upl-badge req">Mandatory</span></div>
+            <div class="upl-hint">Upload proof of your production arrangement: lease deed, ownership proof, or co-manufacturing / contract-manufacturing agreement.</div>
+            <label class="upl-drop">
+              <span class="upl-ic">&#8682;</span>
+              <span class="upl-txt">Click to upload (PDF, JPG, PNG — max 10 MB)</span>
+              <span class="upl-btn">Browse</span>
+              <span class="upl-clear" onclick="clearUpl(event,this)">Remove</span>
+              <input type="file" accept=".pdf,.jpg,.jpeg,.png" onchange="fileChosen(this)">
+            </label>
+            <div class="upl-err">This document is required to proceed.</div>
+          </div>
+        </div>
+        <hr class="q-div">
+        <div class="q-block">
+          <div class="q-lbl">PF3 &mdash; What quality testing or certification has your product undergone?</div>
+          <div class="rg" id="pf3">
+            <label class="ro" onclick="roClick(this,'pf3',0)"><input type="radio" name="pf3" data-score="0"><span class="rt">No testing done</span></label>
+            <label class="ro" onclick="roClick(this,'pf3',1)"><input type="radio" name="pf3" data-score="1"><span class="rt">Internal / in-house quality checks only</span></label>
+            <label class="ro" onclick="roClick(this,'pf3',3)"><input type="radio" name="pf3" data-score="3"><span class="rt">Third-party NABL-accredited lab testing done (microbiological, nutritional, or shelf-life)</span></label>
+            <label class="ro" onclick="roClick(this,'pf3',5)"><input type="radio" name="pf3" data-score="5"><span class="rt">HACCP plan in place, ISO 22000 certified, or GMP/GHP audit completed by an accredited body</span></label>
+          </div>
+          <div class="upl" id="upl-pf3">
+            <div class="upl-hd"><span class="upl-ttl">&#128206; Testing / Certification Proof</span><span class="upl-badge req">Mandatory</span></div>
+            <div class="upl-hint">Upload the certification or testing claimed: NABL lab report, HACCP, ISO 22000, or GMP/GHP certificate.</div>
+            <label class="upl-drop">
+              <span class="upl-ic">&#8682;</span>
+              <span class="upl-txt">Click to upload (PDF, JPG, PNG — max 10 MB)</span>
+              <span class="upl-btn">Browse</span>
+              <span class="upl-clear" onclick="clearUpl(event,this)">Remove</span>
+              <input type="file" accept=".pdf,.jpg,.jpeg,.png" onchange="fileChosen(this)">
+            </label>
+            <div class="upl-err">This document is required to proceed.</div>
+          </div>
+        </div>
+        <div class="ff" style="margin-top:14px">
+          <label class="fl">Key products / SKUs (list your top 3)</label>
+          <textarea class="fi" name="skus" placeholder="e.g. 1. Cold-pressed Groundnut Oil 500ml, 2. Cold-pressed Sesame Oil 250ml, 3. Groundnut Oil 1L (retail)..." style="min-height:64px"></textarea>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-sec" onclick="goStep(3)">&larr; Back</button>
+        <button class="btn btn-pri" onclick="goStep(6)">Next &rarr;</button>
+      </div>
+    </div>
+
+    <!-- ── STEP 6: TRACTION ───────────────────────────────────── -->
+    <div class="f-sec" id="step-6">
+      <div class="sec-hdr">
+        <div class="sec-tag">&#128200; Step 6 of 8</div>
+        <h2>Traction &amp; Validation</h2>
+        <p>Show evidence that real customers want your product. Even minimal traction counts.</p>
+      </div>
+
+      <div class="fcard">
+        <div class="q-block">
+          <div class="q-lbl">TR1 &mdash; What is your current annual revenue / gross sales?</div>
+          <div class="q-hint">For idea/prototype-stage startups, select the first option. For growth-stage startups, accurate figures strengthen your application.</div>
+          <div class="rg" id="tr1">
+            <label class="ro" onclick="roClick(this,'tr1',0)"><input type="radio" name="tr1" data-score="0"><span class="rt">No revenue — pre-commercial stage</span></label>
+            <label class="ro" onclick="roClick(this,'tr1',2)"><input type="radio" name="tr1" data-score="2"><span class="rt">Informal / trial sales only (samples, community sales, local haat) — less than &#8377;1 lakh</span></label>
+            <label class="ro" onclick="roClick(this,'tr1',4)"><input type="radio" name="tr1" data-score="4"><span class="rt">&#8377;1 lakh to &#8377;10 lakh annual revenue</span></label>
+            <label class="ro" onclick="roClick(this,'tr1',6)"><input type="radio" name="tr1" data-score="6"><span class="rt">&#8377;10 lakh to &#8377;100 lakh (&#8377;1 crore) annual revenue</span></label>
+            <label class="ro" onclick="roClick(this,'tr1',8)"><input type="radio" name="tr1" data-score="8"><span class="rt">Greater than &#8377;1 crore annual revenue with documented growth</span></label>
+          </div>
+          <div class="upl" id="upl-tr1">
+            <div class="upl-hd"><span class="upl-ttl">&#128206; Revenue Proof</span><span class="upl-badge req">Mandatory</span></div>
+            <div class="upl-hint">Since you reported sales, upload supporting evidence: GST return, audited statement, sales report, or invoices.</div>
+            <label class="upl-drop">
+              <span class="upl-ic">&#8682;</span>
+              <span class="upl-txt">Click to upload (PDF, JPG, PNG — max 10 MB)</span>
+              <span class="upl-btn">Browse</span>
+              <span class="upl-clear" onclick="clearUpl(event,this)">Remove</span>
+              <input type="file" accept=".pdf,.jpg,.jpeg,.png" onchange="fileChosen(this)">
+            </label>
+            <div class="upl-err">This document is required to proceed.</div>
+          </div>
+        </div>
+        <hr class="q-div">
+        <div class="q-block">
+          <div class="q-lbl">TR2 &mdash; Do you have formal channel partnerships or institutional linkages?</div>
+          <div class="rg" id="tr2">
+            <label class="ro" onclick="roClick(this,'tr2',0)"><input type="radio" name="tr2" data-score="0"><span class="rt">None — selling direct to consumers or informally</span></label>
+            <label class="ro" onclick="roClick(this,'tr2',1)"><input type="radio" name="tr2" data-score="1"><span class="rt">Informal conversations with distributors, retailers, or e-commerce platforms — no formal agreements</span></label>
+            <label class="ro" onclick="roClick(this,'tr2',2)"><input type="radio" name="tr2" data-score="2"><span class="rt">MoU or Letter of Intent signed with a distributor, FPO, institution, or corporate buyer</span></label>
+            <label class="ro" onclick="roClick(this,'tr2',4)"><input type="radio" name="tr2" data-score="4"><span class="rt">Active formal agreements with retail chains, e-commerce (Amazon/Flipkart/ONDC), HoReCa, institutional buyers, or export agents</span></label>
+          </div>
+          <div class="upl" id="upl-tr2">
+            <div class="upl-hd"><span class="upl-ttl">&#128206; Partnership / Linkage Proof</span><span class="upl-badge req">Mandatory</span></div>
+            <div class="upl-hint">Upload the formal partnership document: MoU, distributor agreement, or institutional contract.</div>
+            <label class="upl-drop">
+              <span class="upl-ic">&#8682;</span>
+              <span class="upl-txt">Click to upload (PDF, JPG, PNG — max 10 MB)</span>
+              <span class="upl-btn">Browse</span>
+              <span class="upl-clear" onclick="clearUpl(event,this)">Remove</span>
+              <input type="file" accept=".pdf,.jpg,.jpeg,.png" onchange="fileChosen(this)">
+            </label>
+            <div class="upl-err">This document is required to proceed.</div>
+          </div>
+        </div>
+        <hr class="q-div">
+        <div class="q-block">
+          <div class="q-lbl">TR3 &mdash; Do you have evidence of customer retention or repeat purchases?</div>
+          <div class="rg" id="tr3">
+            <label class="ro" onclick="roClick(this,'tr3',0)"><input type="radio" name="tr3" data-score="0"><span class="rt">No customer data available — pre-sales stage</span></label>
+            <label class="ro" onclick="roClick(this,'tr3',1)"><input type="radio" name="tr3" data-score="1"><span class="rt">Anecdotal repeat customer feedback — not formally tracked</span></label>
+            <label class="ro" onclick="roClick(this,'tr3',2)"><input type="radio" name="tr3" data-score="2"><span class="rt">Documented repeat purchases from identified customers — tracked in records</span></label>
+            <label class="ro" onclick="roClick(this,'tr3',3)"><input type="radio" name="tr3" data-score="3"><span class="rt">Measured retention / reorder rate available (above 35%) — supported by sales data</span></label>
+          </div>
+        </div>
+        <div class="ff" style="margin-top:14px">
+          <label class="fl">Your &ldquo;north star&rdquo; metric — the single number that best captures your growth (optional)</label>
+          <input type="text" class="fi" name="north_star" placeholder="e.g. 240 repeat orders/month, ₹4.2L monthly revenue, 18 active institutional buyers...">
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-sec" onclick="goStep(4)">&larr; Back</button>
+        <button class="btn btn-pri" onclick="goStep(7)">Next &rarr;</button>
+      </div>
+    </div>
+
+    <!-- ── STEP 7: FINANCIALS ─────────────────────────────────── -->
+    <div class="f-sec" id="step-7">
+      <div class="sec-hdr">
+        <div class="sec-tag">&#128176; Step 7 of 8</div>
+        <h2>Financial Viability &amp; Fund Utilisation</h2>
+        <p>Demonstrate that you understand your unit economics and have a realistic plan for how BITO  support will be deployed.</p>
+      </div>
+
+      <div class="fcard">
+        <div class="q-block">
+          <div class="q-lbl">FV1 &mdash; How well do you understand your unit economics?</div>
+          <div class="q-hint">Unit economics = cost of making one unit vs. revenue from one unit, including direct material, labour, packaging, and overhead per unit.</div>
+          <div class="rg" id="fv1">
+            <label class="ro" onclick="roClick(this,'fv1',0)"><input type="radio" name="fv1" data-score="0"><span class="rt">No awareness — have not calculated cost of production or selling price basis</span></label>
+            <label class="ro" onclick="roClick(this,'fv1',1)"><input type="radio" name="fv1" data-score="1"><span class="rt">Basic awareness — know approximate raw material cost but have not built a full cost structure</span></label>
+            <label class="ro" onclick="roClick(this,'fv1',3)"><input type="radio" name="fv1" data-score="3"><span class="rt">Positive contribution margin demonstrated — selling price covers direct costs with some margin</span></label>
+            <label class="ro" onclick="roClick(this,'fv1',4)"><input type="radio" name="fv1" data-score="4"><span class="rt">Full unit economics calculated with data — cost per kg / SKU, contribution margin, and break-even volume known</span></label>
+          </div>
+        </div>
+        <hr class="q-div">
+        <div class="q-block">
+          <div class="q-lbl">FV2 &mdash; How would you describe your fund utilisation plan for the support being sought?</div>
+          <div class="rg" id="fv2">
+            <label class="ro" onclick="roClick(this,'fv2',0)"><input type="radio" name="fv2" data-score="0"><span class="rt">No plan prepared</span></label>
+            <label class="ro" onclick="roClick(this,'fv2',1)"><input type="radio" name="fv2" data-score="1"><span class="rt">General / lump-sum plan (e.g. &ldquo;for machinery and working capital&rdquo;) without clear milestone linkage</span></label>
+            <label class="ro" onclick="roClick(this,'fv2',3)"><input type="radio" name="fv2" data-score="3"><span class="rt">Milestone-based detailed plan with specific expenditure heads, timelines, and expected outcomes per tranche</span></label>
+          </div>
+        </div>
+        <hr class="q-div">
+        <div class="q-block">
+          <div class="q-lbl">FV3 &mdash; What proportion of the total project cost are you contributing from own / private sources?</div>
+          <div class="rg" id="fv3">
+            <label class="ro" onclick="roClick(this,'fv3',0)"><input type="radio" name="fv3" data-score="0"><span class="rt">No own contribution — requesting 100% funding from BITO </span></label>
+            <label class="ro" onclick="roClick(this,'fv3',1)"><input type="radio" name="fv3" data-score="1"><span class="rt">Up to 20% own contribution (equity, personal funds, bank loan)</span></label>
+            <label class="ro" onclick="roClick(this,'fv3',2)"><input type="radio" name="fv3" data-score="2"><span class="rt">20%–40% own contribution</span></label>
+            <label class="ro" onclick="roClick(this,'fv3',3)"><input type="radio" name="fv3" data-score="3"><span class="rt">More than 40% own contribution</span></label>
+          </div>
+        </div>
+        <div class="frow" style="margin-top:14px">
+          <div class="ff">
+            <label class="fl">Total project cost sought (&#8377; lakhs)</label>
+            <input type="number" class="fi" name="proj_cost" placeholder="e.g. 15">
+          </div>
+          <div class="ff">
+            <label class="fl">Support type sought</label>
+            <select name="support_type" class="fs">
+              <option value="">Select</option>
+              <option>Grant (up to ₹20 lakh — Track A)</option>
+              <option>Soft Loan / Convertible Debt (up to ₹50 lakh — Track B)</option>
+              <option>Incubation (space, mentoring, labs)</option>
+              <option>Combined (incubation + financial)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-sec" onclick="goStep(5)">&larr; Back</button>
+        <button class="btn btn-pri" onclick="goStep(8)">Next &rarr;</button>
+      </div>
+    </div>
+
+    <!-- ── STEP 8: FOOD SAFETY + IMPACT ──────────────────────── -->
+    <div class="f-sec" id="step-8">
+      <div class="sec-hdr">
+        <div class="sec-tag">&#9989; Step 8 of 8</div>
+        <h2>Food Safety, Compliance &amp; Impact</h2>
+        <p>FSSAI compliance and socio-economic impact are critical for BITO &rsquo;s mandate.</p>
+      </div>
+
+      <div class="fcard">
+        <div style="font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--navy);margin-bottom:14px;padding-bottom:8px;border-bottom:2px solid var(--border-lt)">&#128208; Food Safety &amp; FSSAI Compliance</div>
+        <div class="q-block">
+          <div class="q-lbl">FS1 &mdash; What is your current FSSAI compliance status?</div>
+          <div class="q-hint">FSSAI tiers: Basic Registration (turnover &lt; &#8377;12 lakh/yr) | State License (&#8377;12 lakh–&#8377;20 crore) | Central License (&gt; &#8377;20 crore, multi-state, exports).</div>
+          <div class="rg" id="fs1">
+            <label class="ro" onclick="roClick(this,'fs1',0)"><input type="radio" name="fs1" data-score="0"><span class="rt">Not aware of FSSAI requirements — no plan in place</span></label>
+            <label class="ro" onclick="roClick(this,'fs1',1)"><input type="radio" name="fs1" data-score="1"><span class="rt">Aware of requirement — planning to obtain FSSAI registration within 3 months of funding</span></label>
+            <label class="ro" onclick="roClick(this,'fs1',3)"><input type="radio" name="fs1" data-score="3"><span class="rt">FSSAI Basic Registration obtained (applicable for turnover &lt; &#8377;12 lakh/year)</span></label>
+            <label class="ro" onclick="roClick(this,'fs1',4)"><input type="radio" name="fs1" data-score="4"><span class="rt">FSSAI State License obtained</span></label>
+            <label class="ro" onclick="roClick(this,'fs1',5)"><input type="radio" name="fs1" data-score="5"><span class="rt">FSSAI Central License obtained (required for multi-state / exports / turnover &gt; &#8377;20 crore)</span></label>
+          </div>
+          <div class="cond-field" id="fssai-num-field">
+            <label class="fl" style="margin-bottom:6px">FSSAI Licence / Registration Number</label>
+            <input type="text" class="fi" name="fssai_no" id="fssai_no" placeholder="14-digit FSSAI number" oninput="toggleFssaiUpl()">
+            <div class="upl" id="upl-fssai" style="border-left-color:var(--saffron)">
+              <div class="upl-hd"><span class="upl-ttl">&#128206; FSSAI Registration / License Certificate</span><span class="upl-badge req">Mandatory</span></div>
+              <div class="upl-hint">Since you entered an FSSAI number, upload the matching FSSAI Registration/License Certificate.</div>
+              <label class="upl-drop">
+                <span class="upl-ic">&#8682;</span>
+                <span class="upl-txt">Click to upload (PDF, JPG, PNG — max 10 MB)</span>
+                <span class="upl-btn">Browse</span>
+                <span class="upl-clear" onclick="clearUpl(event,this)">Remove</span>
+                <input type="file" accept=".pdf,.jpg,.jpeg,.png" onchange="fileChosen(this)">
+              </label>
+              <div class="upl-err">This document is required to proceed.</div>
+            </div>
+          </div>
+        </div>
+        <hr class="q-div">
+        <div class="q-block">
+          <div class="q-lbl">FS2 &mdash; What food safety practices are currently in place at your production facility?</div>
+          <div class="rg" id="fs2">
+            <label class="ro" onclick="roClick(this,'fs2',0)"><input type="radio" name="fs2" data-score="0"><span class="rt">No formal food safety practices — production is ad-hoc</span></label>
+            <label class="ro" onclick="roClick(this,'fs2',1)"><input type="radio" name="fs2" data-score="1"><span class="rt">Basic personal hygiene and cleanliness practices followed informally</span></label>
+            <label class="ro" onclick="roClick(this,'fs2',2)"><input type="radio" name="fs2" data-score="2"><span class="rt">Good Manufacturing Practices (GMP) and Good Hygiene Practices (GHP) guidelines followed and documented</span></label>
+            <label class="ro" onclick="roClick(this,'fs2',3)"><input type="radio" name="fs2" data-score="3"><span class="rt">HACCP (Hazard Analysis Critical Control Points) plan developed and implemented, or ISO 22000 certified</span></label>
+          </div>
+        </div>
+        <hr class="q-div">
+        <div class="q-block">
+          <div class="q-lbl">FS3 &mdash; Are your product labels compliant with FSSAI labelling regulations?</div>
+          <div class="q-hint">FSSAI labelling requires: product name, net quantity, ingredient list, nutritional info, manufacturer details, batch no., MFG &amp; best-before dates, FSSAI licence no., and vegetarian/non-vegetarian symbol.</div>
+          <div class="rg" id="fs3">
+            <label class="ro" onclick="roClick(this,'fs3',0)"><input type="radio" name="fs3" data-score="0"><span class="rt">Not yet developed — no label designed</span></label>
+            <label class="ro" onclick="roClick(this,'fs3',1)"><input type="radio" name="fs3" data-score="1"><span class="rt">Basic label exists but full FSSAI compliance not verified</span></label>
+            <label class="ro" onclick="roClick(this,'fs3',2)"><input type="radio" name="fs3" data-score="2"><span class="rt">Label is FSSAI-compliant with all mandatory declarations</span></label>
+          </div>
+        </div>
+      </div>
+
+      <div class="fcard">
+        <div style="font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--navy);margin-bottom:14px;padding-bottom:8px;border-bottom:2px solid var(--border-lt)">&#127808; Impact, Novelty &amp; Inclusion</div>
+        <div class="q-block">
+          <div class="q-lbl">IN1 &mdash; Does your venture create direct socio-economic impact for marginalised communities?</div>
+          <div class="rg" id="in1">
+            <label class="ro" onclick="roClick(this,'in1',0)"><input type="radio" name="in1" data-score="0"><span class="rt">No specific community linkage — standard commercial model</span></label>
+            <label class="ro" onclick="roClick(this,'in1',1)"><input type="radio" name="in1" data-score="1"><span class="rt">Indirect impact — general rural employment or agricultural value addition</span></label>
+            <label class="ro" onclick="roClick(this,'in1',2)"><input type="radio" name="in1" data-score="2"><span class="rt">Direct documented linkage — sourcing from / employing farmers, women, SHGs, tribal communities, or rural artisans</span></label>
+          </div>
+        </div>
+        <hr class="q-div">
+        <div class="q-block">
+          <div class="q-lbl">IN2 &mdash; How would you describe the novelty or innovation in your product / process / business model?</div>
+          <div class="rg" id="in2">
+            <label class="ro" onclick="roClick(this,'in2',0)"><input type="radio" name="in2" data-score="0"><span class="rt">Standard product or process — no significant innovation relative to existing market</span></label>
+            <label class="ro" onclick="roClick(this,'in2',1)"><input type="radio" name="in2" data-score="1"><span class="rt">Some innovation — novel combination, improved process efficiency, or underserved product category</span></label>
+            <label class="ro" onclick="roClick(this,'in2',2)"><input type="radio" name="in2" data-score="2"><span class="rt">Novel product / technology / business model with IP potential or demonstrable first-mover advantage</span></label>
+          </div>
+        </div>
+        <hr class="q-div">
+        <div class="q-block">
+          <div class="q-lbl">IN3 &mdash; Do you have documented sustainability or waste-reduction practices in your operations?</div>
+          <div class="rg" id="in3">
+            <label class="ro" onclick="roClick(this,'in3',0)"><input type="radio" name="in3" data-score="0"><span class="rt">No sustainability practices in place</span></label>
+            <label class="ro" onclick="roClick(this,'in3',1)"><input type="radio" name="in3" data-score="1"><span class="rt">Yes — documented practices such as waste by-product utilisation, energy efficiency, water recycling, or organic/natural input use</span></label>
+          </div>
+          <div class="upl" id="upl-in3">
+            <div class="upl-hd"><span class="upl-ttl">&#128206; Sustainability / Waste-Reduction Proof</span><span class="upl-badge req">Mandatory</span></div>
+            <div class="upl-hint">Upload documentation of the practices claimed: SOP, sustainability report, certification, or waste-utilisation documentation.</div>
+            <label class="upl-drop">
+              <span class="upl-ic">&#8682;</span>
+              <span class="upl-txt">Click to upload (PDF, JPG, PNG — max 10 MB)</span>
+              <span class="upl-btn">Browse</span>
+              <span class="upl-clear" onclick="clearUpl(event,this)">Remove</span>
+              <input type="file" accept=".pdf,.jpg,.jpeg,.png" onchange="fileChosen(this)">
+            </label>
+            <div class="upl-err">This document is required to proceed.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-sec" onclick="goStep(7)">&larr; Back</button>
+        <button class="btn btn-sub" onclick="submitForm()">&#9989; Submit Application</button>
+      </div>
+    </div>
+
+    <!-- ── SUBMISSION CONFIRMATION ──────────────────────────── -->
+    <div id="scorecard">
+      <div class="app-ref" id="app-ref-banner"></div>
+      <div class="sc-hdr" id="sc-hdr">
+        <h2>Application Submitted</h2>
+        <div class="score-ring" id="score-ring" style="border-color:rgba(255,255,255,.35)">
+          <div class="score-n" style="font-size:52px">&#10003;</div>
+        </div>
+        <div class="status-pill" id="sc-status-pill"></div>
+      </div>
+      <div class="sc-body">
+        <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);margin-bottom:14px">What happens next</div>
+        <div id="sc-notes"></div>
+      </div>
+    </div>
+
+  </div><!-- /form-wrap -->
+</div><!-- /applicant-view -->
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--  REVIEWER DASHBOARD                                            -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div id="reviewer-view" style="display:none">
+
+  <div class="rv-hdr">
+    <div class="rv-hdr-left">
+      <h1>&#128202; Reviewer Dashboard &mdash; BITO Startup Screening</h1>
+      <p>2025–26 Cycle &nbsp;|&nbsp; Preliminary Shortlisting View &nbsp;|&nbsp; Confidential</p>
+    </div>
+    <div class="rv-tag">Officer Access</div>
+  </div>
+
+  <div class="rv-body">
+
+    <!-- Stats Row -->
+    <div class="stats-row">
+      <div class="stat"><div class="sv" id="st-total">6</div><div class="sl">Total Applications</div></div>
+      <div class="stat sp"><div class="sv" id="st-pri">2</div><div class="sl">Priority Shortlisted</div><div style="font-size:10px;color:var(--text-3);margin-top:2px">Score &ge; 75</div></div>
+      <div class="stat ss"><div class="sv" id="st-shl">1</div><div class="sl">Shortlisted</div><div style="font-size:10px;color:var(--text-3);margin-top:2px">Score 65–74</div></div>
+      <div class="stat sb"><div class="sv" id="st-bdl">1</div><div class="sl">Borderline</div><div style="font-size:10px;color:var(--text-3);margin-top:2px">Score 55–64</div></div>
+      <div class="stat sr"><div class="sv" id="st-rej">2</div><div class="sl">Not Shortlisted</div><div style="font-size:10px;color:var(--text-3);margin-top:2px">Score &lt; 55</div></div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="flt-bar">
+      <button class="flt on" onclick="filterApps('all',this)">All <span class="ct" id="fc-all">6</span></button>
+      <button class="flt" onclick="filterApps('pri',this)">&#11088; Priority <span class="ct" id="fc-pri">2</span></button>
+      <button class="flt" onclick="filterApps('shl',this)">&#10003; Shortlisted <span class="ct" id="fc-shl">1</span></button>
+      <button class="flt" onclick="filterApps('bdl',this)">&#9676; Borderline <span class="ct" id="fc-bdl">1</span></button>
+      <button class="flt" onclick="filterApps('rej',this)">&#10007; Not Shortlisted <span class="ct" id="fc-rej">2</span></button>
+      <input class="srch" type="text" placeholder="&#128269; Search by name..." oninput="searchApps(this.value)">
+    </div>
+
+    <!-- Header row -->
+    <div class="app-hdr">
+      <span>Entity Name</span><span>Track</span><span>Score</span><span>Status</span><span>Submitted</span><span></span>
+    </div>
+
+    <!-- Applications -->
+    <div class="app-list" id="app-list"></div>
+
+  </div>
+
+  <!-- Drill-down Panel -->
+  <div class="overlay" id="overlay" onclick="closePanel(event)">
+    <div class="drill-panel" id="drill-panel">
+      <div class="dp-hdr">
+        <div><h3 id="dp-name">--</h3><div class="dp-sub" id="dp-sub">--</div></div>
+        <button class="close-x" onclick="closeDrill()">&#10005;</button>
+      </div>
+      <div class="dp-body">
+        <div class="dp-score-hero">
+          <div class="dp-sn" id="dp-score">--<span>/100</span></div>
+          <div id="dp-badge" style="margin-top:6px"></div>
+        </div>
+        <div class="dp-grid" id="dp-info-grid"></div>
+        <div class="dp-sec-ttl" style="margin-top:4px">Score Breakdown</div>
+        <div id="dp-dims"></div>
+        <div class="dp-sec-ttl" style="margin-top:16px">Flags &amp; Observations</div>
+        <div id="dp-flags"></div>
+        <div class="reviewer-box">
+          <div class="rb-lbl">Reviewer Action</div>
+          <select id="rv-action">
+            <option value="">-- Select recommendation --</option>
+            <option>Confirm: Priority Shortlisted — advance to pitch</option>
+            <option>Confirm: Shortlisted — advance to pitch</option>
+            <option>Override: Escalate Borderline — advance to pitch</option>
+            <option>Hold: Request additional documents</option>
+            <option>Override: Reject despite score</option>
+            <option>Defer to next cycle</option>
+          </select>
+          <textarea id="rv-note" placeholder="Reviewer notes (visible only in internal records)..."></textarea>
+          <button class="save-rec" onclick="saveRec()">&#128190; Save Recommendation</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /reviewer-view -->
+
+
+<script>
+// ─────────────────────────────────────────────────────────────────
+//  DATA
+// ─────────────────────────────────────────────────────────────────
+const SAMPLE_APPS = [
+  {
+    id:'BITO-2025-0041', name:'NutriBlend Solutions Pvt Ltd',
+    state:'Maharashtra', cat:'Cereals, Millets & Pulses',
+    stage:'Growth / Scaling', track:'B',
+    scores:{team:21,mkt:17,prod:12,trac:12,fin:8,saf:5,imp:3},
+    dpiit:'DIPP98741', fssai:'State License', date:'12 May 2025',
+    flags:[
+      {t:'ok',m:'Strong founding team with food science credentials and prior industry experience.'},
+      {t:'ok',m:'Revenue > ₹1 crore with documented repeat institutional buyers.'},
+      {t:'warn',m:'Food Safety score (5/10) below recommended 6/10 for Track B — HACCP plan not yet implemented.'},
+      {t:'info',m:'ODOP alignment: GI-tagged Wardha cotton seed oil product — strategic fit with BITO mandate.'}
+    ]
+  },
+  {
+    id:'BITO-2025-0039', name:'GrainCraft Agro Pvt Ltd',
+    state:'Punjab', cat:'Cereals, Millets & Pulses',
+    stage:'Growth / Scaling', track:'B',
+    scores:{team:18,mkt:16,prod:13,trac:13,fin:9,saf:6,imp:4},
+    dpiit:'DIPP77312', fssai:'State License', date:'8 May 2025',
+    flags:[
+      {t:'ok',m:'Excellent traction: ₹1.2 crore annual revenue with 3 active retail channel agreements.'},
+      {t:'ok',m:'Milestone-based fund utilisation plan with specific capex and working capital heads.'},
+      {t:'ok',m:'GMP and GHP documented; HACCP plan submission pending certification.'},
+      {t:'info',m:'Basmati value-addition — direct export promotion alignment. APEDA membership active.'}
+    ]
+  },
+  {
+    id:'BITO-2025-0038', name:'AgriPure Exports LLP',
+    state:'Punjab', cat:'Spices & Condiments',
+    stage:'Early Revenue', track:'B',
+    scores:{team:17,mkt:14,prod:11,trac:9,fin:7,saf:5,imp:3},
+    dpiit:'DIPP74421', fssai:'Basic Registration', date:'5 May 2025',
+    flags:[
+      {t:'ok',m:'Export-oriented model with APEDA registration and confirmed LOIs from UAE buyers.'},
+      {t:'warn',m:'FSSAI Basic Registration only — State License required for declared revenue tier. Flag for compliance.'},
+      {t:'warn',m:'Traction (9/15) moderate — revenue ₹18 lakh annual; growth trajectory needs demonstration.'},
+      {t:'info',m:'Fund utilisation plan is milestone-based and realistic for organic spice processing unit.'}
+    ]
+  },
+  {
+    id:'BITO-2025-0035', name:'GreenFarm Organics',
+    state:'Uttarakhand', cat:'Oils & Fats',
+    stage:'Prototype / Pilot', track:'A',
+    scores:{team:14,mkt:11,prod:10,trac:8,fin:6,saf:6,imp:5},
+    dpiit:null, fssai:'Basic Registration', date:'28 Apr 2025',
+    flags:[
+      {t:'warn',m:'Team score (14/25) is below the recommended floor of 15/25 — founding team lacks food technology credentials.'},
+      {t:'ok',m:'Maximum Impact score (5/5): directly sourcing from tribal farmer communities in Kumaon region.'},
+      {t:'info',m:'No DPIIT recognition — eligibility technically satisfied but recognition advised before next stage.'},
+      {t:'info',m:'Cold-pressed oil category with documented GMP practices — regulatory path is clear.'}
+    ]
+  },
+  {
+    id:'BITO-2025-0031', name:'SpiceCraft Foods LLP',
+    state:'Rajasthan', cat:'Spices & Condiments',
+    stage:'Growth / Scaling', track:'B',
+    scores:{team:10,mkt:9,prod:8,trac:6,fin:5,saf:5,imp:4},
+    dpiit:'DIPP55109', fssai:'State License', date:'20 Apr 2025',
+    flags:[
+      {t:'warn',m:'Critical: Team score (10/25) is well below the minimum floor of 12/25. Application cannot be recommended.'},
+      {t:'warn',m:'No qualified food professional on the team despite Track B application. Regulatory risk.'},
+      {t:'warn',m:'Traction weak (6/15): revenue < ₹10 lakh for a stated Growth/Scaling stage — inconsistency noted.'},
+      {t:'info',m:'Founder is advised to strengthen the technical team and reapply in the next cycle.'}
+    ]
+  },
+  {
+    id:'BITO-2025-0029', name:'Sunrise Millets Co-op',
+    state:'Odisha', cat:'Cereals, Millets & Pulses',
+    stage:'Prototype / Pilot', track:'A',
+    scores:{team:12,mkt:12,prod:9,trac:8,fin:5,saf:4,imp:5},
+    dpiit:null, fssai:'Planning to register', date:'15 Apr 2025',
+    flags:[
+      {t:'ok',m:'Maximum Impact score (5/5): SHG-driven women\'s cooperative directly employing 40 tribal women farmers.'},
+      {t:'warn',m:'FSSAI not yet obtained — for Track A this is acceptable, but timeline commitment required before disbursement.'},
+      {t:'info',m:'Millet product ODOP alignment with Odisha state scheme — strong strategic fit.'},
+      {t:'warn',m:'Financial viability understanding is limited — fund utilisation plan needs strengthening.'}
+    ]
+  }
+];
+
+let allApps = [...SAMPLE_APPS];
+let currentTrack = 'A';
+let currentFilter = 'all';
+let currentDrillApp = null;
+
+// ─────────────────────────────────────────────────────────────────
+//  VIEW TOGGLE
+// ─────────────────────────────────────────────────────────────────
+function switchView(v) {
+  document.getElementById('applicant-view').style.display = v==='applicant'?'block':'none';
+  document.getElementById('reviewer-view').style.display = v==='reviewer'?'block':'none';
+  document.querySelectorAll('.vt-btn').forEach(b=>b.classList.remove('on'));
+  event.target.classList.add('on');
+  if(v==='reviewer') renderApps();
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  FORM NAVIGATION
+// ─────────────────────────────────────────────────────────────────
+let currentStep = 1;
+
+function goStep(n) {
+  // Basic validation before advancing
+  if(n > currentStep) {
+    const cur = document.getElementById('step-'+currentStep);
+    const reqs = cur ? cur.querySelectorAll('input[type=text][name]:not([name=founder_profile]):not([name=dpiit_no]):not([name=odop]):not([name=north_star]):not([name=fssai_no]):not([name=tam_basis]):not([name=skus])') : [];
+    // Stage check
+    if(currentStep === 2) {
+      if(!document.querySelector('input[name=stage]:checked')) {
+        document.getElementById('stage-err').classList.add('on');
+        return;
+      } else document.getElementById('stage-err').classList.remove('on');
+    }
+    // Mandatory document uploads visible on the current step
+    if(!validateUploads(cur)) {
+      window.scrollTo({top:0,behavior:'smooth'});
+      return;
+    }
+  }
+  document.querySelectorAll('.f-sec').forEach(s=>s.classList.remove('on'));
+  const next = document.getElementById('step-'+n);
+  if(next) { next.classList.add('on'); currentStep = n; }
+  updateProgress(n);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function updateProgress(n) {
+  for(let i=1;i<=8;i++){
+    const p = document.getElementById('ps-'+i);
+    if(!p) continue;
+    p.classList.remove('cur','done');
+    if(i<n) p.classList.add('done');
+    else if(i===n) p.classList.add('cur');
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  ELIGIBILITY GATES
+// ─────────────────────────────────────────────────────────────────
+function ynClick(el, name, val) {
+  el.closest('.yn-g').querySelectorAll('.yn').forEach(y=>y.classList.remove('sel'));
+  el.classList.add('sel');
+}
+
+function checkGates() {
+  const e1 = document.querySelector('input[name=e1]:checked');
+  const e2 = document.querySelector('input[name=e2]:checked');
+  const e3 = document.querySelector('input[name=e3]:checked');
+  if(!e1||!e2||!e3) {
+    document.getElementById('gate-err').classList.add('on');
+    return;
+  }
+  document.getElementById('gate-err').classList.remove('on');
+  // Bihar presence must be answered
+  const bihar = document.querySelector('input[name=bihar]:checked');
+  if(!bihar) {
+    document.getElementById('gate-err').textContent = 'Please indicate your current presence in Bihar before proceeding.';
+    document.getElementById('gate-err').classList.add('on');
+    return;
+  }
+  const reasons = [];
+  if(e1.value==='no') reasons.push('E1: Entity is not registered in India.');
+  if(e2.value==='no') reasons.push('E2: Food processing is not the primary business activity.');
+  if(e3.value==='no') reasons.push('E3: Indian nationals do not hold ≥51% ownership.');
+  if(bihar.value==='none') reasons.push('E6: No current operations in Bihar and no Bihar expansion planned. BITO support requires either an existing Bihar presence or a planned expansion into Bihar.');
+  if(reasons.length) {
+    document.querySelectorAll('.f-sec').forEach(s=>s.classList.remove('on'));
+    const rl = document.getElementById('rej-list');
+    rl.innerHTML = reasons.map(r=>`<li>${r}</li>`).join('');
+    document.getElementById('rej-screen').classList.add('on');
+    updateProgress(0);
+    window.scrollTo({top:0,behavior:'smooth'});
+    return;
+  }
+  // Mandatory document uploads on step 1
+  if(!validateUploads(document.getElementById('step-1'))) {
+    window.scrollTo({top:0,behavior:'smooth'});
+    return;
+  }
+  goStep(2);
+}
+
+function resetForm() {
+  document.getElementById('rej-screen').classList.remove('on');
+  document.querySelectorAll('input[type=radio]').forEach(r=>r.checked=false);
+  document.querySelectorAll('.yn').forEach(y=>y.classList.remove('sel'));
+  document.querySelectorAll('.ro').forEach(r=>r.classList.remove('sel'));
+  document.querySelectorAll('.sc').forEach(s=>s.classList.remove('sel'));
+  document.querySelectorAll('.upl').forEach(box=>resetUpl(box));
+  document.querySelectorAll('input[type=text]').forEach(t=>t.value='');
+  document.querySelectorAll('.upl').forEach(box=>{ if(box.id!=='upl-reg' && box.id!=='upl-gst') box.classList.remove('on'); });
+  goStep(1);
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  RADIO INTERACTIONS
+// ─────────────────────────────────────────────────────────────────
+function roClick(el, name, score) {
+  el.closest('.rg').querySelectorAll('.ro').forEach(r=>r.classList.remove('sel'));
+  el.classList.add('sel');
+  // FSSAI conditional field
+  if(name==='fs1') {
+    const cf = document.getElementById('fssai-num-field');
+    cf.classList.toggle('on', score >= 3);
+    if(score < 3) toggleFssaiUpl(); // hide cert upload if field hidden
+  }
+  // Conditional document uploads driven by the chosen option's score
+  const uplRules = {
+    tm1:{id:'upl-tm1', show: score > 0},                 // any food-domain expertise claimed
+    tm4:{id:'upl-tm4', show: score >= 2},                // consultant/advisor or full-time professional
+    pf2:{id:'upl-pf2', show: score >= 2},                // contract / own / leased facility
+    pf3:{id:'upl-pf3', show: score >= 3},                // NABL testing or HACCP/ISO/GMP
+    tr1:{id:'upl-tr1', show: score >= 2},                // revenue above pre-revenue
+    tr2:{id:'upl-tr2', show: score >= 2},                // formal MoU/LOI or active agreements
+    in3:{id:'upl-in3', show: score >= 1}                 // sustainability practices = Yes
+  };
+  if(uplRules[name]) {
+    const rule = uplRules[name];
+    const box = document.getElementById(rule.id);
+    if(box) {
+      box.classList.toggle('on', rule.show);
+      if(!rule.show) resetUpl(box);
+    }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  DOCUMENT UPLOADS
+// ─────────────────────────────────────────────────────────────────
+function fileChosen(input) {
+  const drop = input.closest('.upl-drop');
+  const box = input.closest('.upl');
+  const f = input.files && input.files[0];
+  if(!f) { resetUpl(box); return; }
+  // 10 MB size guard
+  if(f.size > 10 * 1024 * 1024) {
+    const err = box.querySelector('.upl-err');
+    err.textContent = 'File exceeds 10 MB. Please upload a smaller file.';
+    err.classList.add('on');
+    input.value = '';
+    return;
+  }
+  drop.querySelector('.upl-txt').textContent = '\u2713 ' + f.name;
+  drop.classList.add('has-file');
+  box.querySelector('.upl-err').classList.remove('on');
+}
+
+function clearUpl(e, el) {
+  e.preventDefault();
+  e.stopPropagation();
+  const box = el.closest('.upl');
+  resetUpl(box);
+}
+
+function resetUpl(box) {
+  if(!box) return;
+  const drop = box.querySelector('.upl-drop');
+  const input = box.querySelector('input[type=file]');
+  if(input) input.value = '';
+  if(drop) {
+    drop.classList.remove('has-file');
+    const txt = drop.querySelector('.upl-txt');
+    if(txt) txt.textContent = 'Click to upload (PDF, JPG, PNG \u2014 max 10 MB)';
+  }
+  const err = box.querySelector('.upl-err');
+  if(err) { err.classList.remove('on'); err.textContent = 'This document is required to proceed.'; }
+}
+
+// Validate every visible mandatory upload inside a step element.
+// Returns true if all are satisfied; flags the missing ones otherwise.
+function validateUploads(stepEl) {
+  if(!stepEl) return true;
+  let ok = true;
+  stepEl.querySelectorAll('.upl.on').forEach(box=>{
+    const input = box.querySelector('input[type=file]');
+    const has = input && input.files && input.files.length > 0;
+    const err = box.querySelector('.upl-err');
+    if(!has) {
+      ok = false;
+      if(err) err.classList.add('on');
+      box.querySelector('.upl-drop').style.borderColor = 'var(--danger)';
+    } else {
+      if(err) err.classList.remove('on');
+      box.querySelector('.upl-drop').style.borderColor = '';
+    }
+  });
+  return ok;
+}
+
+// Bihar presence -> toggle the right proof upload
+function biharClick(el, val) {
+  el.closest('.rg').querySelectorAll('.ro').forEach(r=>r.classList.remove('sel'));
+  el.classList.add('sel');
+  const ex = document.getElementById('upl-bihar-existing');
+  const xp = document.getElementById('upl-bihar-expansion');
+  ex.classList.toggle('on', val==='existing');
+  xp.classList.toggle('on', val==='expansion');
+  if(val!=='existing') resetUpl(ex);
+  if(val!=='expansion') resetUpl(xp);
+}
+
+// DPIIT certificate required only when a number is entered
+function toggleDpiitUpl() {
+  const v = (document.getElementById('dpiit_no').value || '').trim();
+  const box = document.getElementById('upl-dpiit');
+  box.classList.toggle('on', v.length > 0);
+  if(v.length === 0) resetUpl(box);
+}
+
+// FSSAI certificate required only when a number is entered (and field visible)
+function toggleFssaiUpl() {
+  const field = document.getElementById('fssai-num-field');
+  const inp = document.getElementById('fssai_no');
+  const box = document.getElementById('upl-fssai');
+  const v = (inp && inp.value || '').trim();
+  const show = field.classList.contains('on') && v.length > 0;
+  box.classList.toggle('on', show);
+  if(!show) resetUpl(box);
+}
+
+function stageClick(el, track) {
+  document.querySelectorAll('.sc').forEach(s=>s.classList.remove('sel'));
+  el.classList.add('sel');
+  currentTrack = track;
+  document.getElementById('stage-err').classList.remove('on');
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  CHARACTER COUNTERS
+// ─────────────────────────────────────────────────────────────────
+document.getElementById('one_liner').addEventListener('input', function(){
+  document.getElementById('ol-ct').textContent = this.value.length;
+});
+document.getElementById('prob_stmt').addEventListener('input', function(){
+  document.getElementById('ps-ct').textContent = this.value.length;
+});
+
+// ─────────────────────────────────────────────────────────────────
+//  SCORING & SUBMISSION
+// ─────────────────────────────────────────────────────────────────
+function getScore(name) {
+  const el = document.querySelector(`input[name=${name}]:checked`);
+  return el ? parseInt(el.dataset.score||0) : 0;
+}
+
+function submitForm() {
+  // Mandatory document uploads on the final step
+  if(!validateUploads(document.getElementById('step-8'))) {
+    window.scrollTo({top:0,behavior:'smooth'});
+    return;
+  }
+  const team = getScore('tm1')+getScore('tm2')+getScore('tm3')+getScore('tm4');
+  const mkt  = getScore('mk1')+getScore('mk2')+getScore('mk3')+getScore('mk4');
+  const prod = getScore('pf1')+getScore('pf2')+getScore('pf3');
+  const trac = getScore('tr1')+getScore('tr2')+getScore('tr3');
+  const fin  = getScore('fv1')+getScore('fv2')+getScore('fv3');
+  const saf  = getScore('fs1')+getScore('fs2')+getScore('fs3');
+  const imp  = getScore('in1')+getScore('in2')+getScore('in3');
+  const total = team+mkt+prod+trac+fin+saf+imp;
+
+  const stageName = document.querySelector('input[name=stage]:checked')?.value || 'prototype';
+  const startupName = document.getElementById('startup_name')?.value || 'Your Startup';
+  const appId = 'BITO-2025-' + String(Math.floor(1000+Math.random()*9000));
+
+  // Add to reviewer pool
+  const newApp = {
+    id:appId, name:startupName,
+    state: document.querySelector('[name=state]')?.value || '--',
+    cat: document.querySelector('[name=food_cat]')?.value || '--',
+    stage: stageName === 'idea' ? 'Idea / Concept' : stageName === 'prototype' ? 'Prototype / Pilot' : stageName === 'early_revenue' ? 'Early Revenue' : 'Growth / Scaling',
+    track: currentTrack,
+    scores:{team,mkt,prod,trac,fin,saf,imp},
+    dpiit: document.querySelector('[name=dpiit_no]')?.value || null,
+    fssai: getScore('fs1')>=5?'Central License':getScore('fs1')>=4?'State License':getScore('fs1')>=3?'Basic Registration':'Planning / None',
+    date: new Date().toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}),
+    flags:[{t:'info',m:'Application submitted via portal. Scores computed automatically.'}]
+  };
+  allApps.unshift(newApp);
+  updateStats();
+
+  // Show scorecard
+  document.querySelectorAll('.f-sec').forEach(s=>s.classList.remove('on'));
+  document.getElementById('scorecard').classList.add('on');
+
+  document.getElementById('app-ref-banner').textContent = `Application submitted successfully. Your reference ID: ${appId}`;
+
+  // Neutral confirmation — no scores or outcomes shown to the applicant
+  const pill = document.getElementById('sc-status-pill');
+  pill.innerHTML = '&#10003; Received for Review';
+  pill.style.background = 'rgba(74,222,128,.9)';
+  pill.style.color = '#fff';
+
+  const notes = document.getElementById('sc-notes');
+  notes.innerHTML =
+    `<div class="sc-note ok">&#10003; Thank you. Your application has been recorded with reference <strong>${appId}</strong> and submitted to the BITO screening committee for evaluation.</div>`
+    + `<div class="sc-note info" style="margin-top:10px">&#8505; Your submission will be assessed against the programme criteria. You will receive communication on the outcome and any next steps in due course. Please retain your reference ID for all correspondence.</div>`;
+
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  REVIEWER DASHBOARD
+// ─────────────────────────────────────────────────────────────────
+function getStatus(app) {
+  const t = Object.values(app.scores).reduce((a,b)=>a+b,0);
+  if(t>=75) return 'pri';
+  if(t>=65) return 'shl';
+  if(t>=55) return 'bdl';
+  return 'rej';
+}
+function statusLabel(s) {
+  const m = {pri:'Priority Shortlisted',shl:'Shortlisted',bdl:'Borderline',rej:'Not Shortlisted'};
+  return m[s]||'--';
+}
+
+function updateStats() {
+  const counts = {total:allApps.length,pri:0,shl:0,bdl:0,rej:0};
+  allApps.forEach(a=>{ const s=getStatus(a); counts[s]=(counts[s]||0)+1; });
+  document.getElementById('st-total').textContent = counts.total;
+  document.getElementById('st-pri').textContent = counts.pri;
+  document.getElementById('st-shl').textContent = counts.shl;
+  document.getElementById('st-bdl').textContent = counts.bdl;
+  document.getElementById('st-rej').textContent = counts.rej;
+  document.getElementById('fc-all').textContent = counts.total;
+  document.getElementById('fc-pri').textContent = counts.pri;
+  document.getElementById('fc-shl').textContent = counts.shl;
+  document.getElementById('fc-bdl').textContent = counts.bdl;
+  document.getElementById('fc-rej').textContent = counts.rej;
+}
+
+function renderApps(filter, searchTerm) {
+  filter = filter || currentFilter;
+  const list = document.getElementById('app-list');
+  let apps = allApps;
+  if(filter !== 'all') apps = apps.filter(a=>getStatus(a)===filter);
+  if(searchTerm) apps = apps.filter(a=>a.name.toLowerCase().includes(searchTerm.toLowerCase()));
+  
+  list.innerHTML = apps.map(a=>{
+    const total = Object.values(a.scores).reduce((x,y)=>x+y,0);
+    const st = getStatus(a);
+    const badgeClass = {pri:'pri',shl:'shl',bdl:'bdl',rej:'rej'}[st];
+    const trackClass = a.track==='A'?'a':'b';
+    const trackLabel = 'Track '+a.track;
+    return `<div class="app-row" onclick="openDrill('${a.id}')">
+      <div><div class="app-nm">${a.name}</div><div class="app-id">${a.id} &nbsp;|&nbsp; ${a.state}</div></div>
+      <div><span class="tr-pill ${trackClass}">${trackLabel}</span></div>
+      <div><span class="app-sc">${total}<small>/100</small></span></div>
+      <div><span class="sbadge ${badgeClass}"><span class="dot"></span>${statusLabel(st)}</span></div>
+      <div style="font-size:12px;color:var(--text-3)">${a.date}</div>
+      <div><button class="drill-btn" onclick="event.stopPropagation();openDrill('${a.id}')">Details &rarr;</button></div>
+    </div>`;
+  }).join('');
+  updateStats();
+}
+
+function filterApps(f, el) {
+  currentFilter = f;
+  document.querySelectorAll('.flt').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  renderApps(f);
+}
+
+function searchApps(v) { renderApps(currentFilter, v); }
+
+function openDrill(id) {
+  const app = allApps.find(a=>a.id===id);
+  if(!app) return;
+  currentDrillApp = app;
+  const total = Object.values(app.scores).reduce((x,y)=>x+y,0);
+  const st = getStatus(app);
+  document.getElementById('dp-name').textContent = app.name;
+  document.getElementById('dp-sub').textContent = `${app.id} | ${app.stage} | ${app.state}`;
+  document.getElementById('dp-score').innerHTML = `${total}<span>/100</span>`;
+  
+  const bc = {pri:'sbadge pri',shl:'sbadge shl',bdl:'sbadge bdl',rej:'sbadge rej'}[st];
+  document.getElementById('dp-badge').innerHTML = `<span class="${bc}"><span class="dot"></span>${statusLabel(st)}</span>`;
+  
+  document.getElementById('dp-info-grid').innerHTML = `
+    <div class="dp-info"><div class="lbl">Food Category</div><div class="val">${app.cat}</div></div>
+    <div class="dp-info"><div class="lbl">Track</div><div class="val">Track ${app.track} (${app.track==='A'?'Grant Support':'Debt/Scale'})</div></div>
+    <div class="dp-info"><div class="lbl">DPIIT Recognition</div><div class="val">${app.dpiit||'Not obtained'}</div></div>
+    <div class="dp-info"><div class="lbl">FSSAI Status</div><div class="val">${app.fssai}</div></div>
+  `;
+  
+  const dims = [
+    {lbl:'Team & Execution',k:'team',max:25},
+    {lbl:'Market Need & Size',k:'mkt',max:20},
+    {lbl:'Product & Feasibility',k:'prod',max:15},
+    {lbl:'Traction & Validation',k:'trac',max:15},
+    {lbl:'Financial Viability',k:'fin',max:10},
+    {lbl:'Food Safety & FSSAI',k:'saf',max:10},
+    {lbl:'Impact & Novelty',k:'imp',max:5}
+  ];
+  const floors = {team:12,saf:4};
+  document.getElementById('dp-dims').innerHTML = dims.map(d=>{
+    const sc = app.scores[d.k];
+    const pct = Math.round((sc/d.max)*100);
+    const barColor = pct>=70?'var(--success)':pct>=45?'var(--saffron)':'var(--danger)';
+    const floorWarn = floors[d.k]&&sc<floors[d.k] ? `<span style="color:var(--danger);font-size:10px;font-weight:700"> ⚠ Below floor</span>` : '';
+    return `<div class="dd-row">
+      <div class="dd-name">${d.lbl}${floorWarn}</div>
+      <div class="dd-bw"><div class="dd-b" style="width:${pct}%;background:${barColor}"></div></div>
+      <div class="dd-sc">${sc}<span class="dd-max">/${d.max}</span></div>
+    </div>`;
+  }).join('');
+  
+  document.getElementById('dp-flags').innerHTML = app.flags.map(f=>
+    `<div class="dp-flag ${f.t}">
+      ${f.t==='ok'?'&#10003;':f.t==='warn'?'&#9888;':'&#8505;'} ${f.m}
+    </div>`
+  ).join('');
+  
+  document.getElementById('rv-action').value = '';
+  document.getElementById('rv-note').value = '';
+  document.getElementById('overlay').classList.add('on');
+}
+
+function closeDrill() { document.getElementById('overlay').classList.remove('on'); }
+function closePanel(e) { if(e.target===document.getElementById('overlay')) closeDrill(); }
+
+function saveRec() {
+  const action = document.getElementById('rv-action').value;
+  const note = document.getElementById('rv-note').value;
+  if(!action) { alert('Please select a recommendation action.'); return; }
+  
+  // NOTE: Swapped native alert for visual mock as per best practices.
+  const msgBox = document.createElement('div');
+  msgBox.style.cssText = "position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#1A3A5C;color:#fff;padding:16px 24px;border-radius:8px;z-index:9999;font-family:'DM Sans',sans-serif;box-shadow:0 4px 12px rgba(0,0,0,0.15)";
+  msgBox.innerHTML = `Recommendation saved successfully for ID: <strong>${currentDrillApp?.id}</strong>`;
+  document.body.appendChild(msgBox);
+  setTimeout(()=>msgBox.remove(), 3500);
+  
+  closeDrill();
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  INIT
+// ─────────────────────────────────────────────────────────────────
+updateStats();
+renderApps();
+</script>
+</body>
+</html>
